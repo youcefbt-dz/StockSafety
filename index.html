@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stock Safety — منصة مراقبة المستودعات الذكية</title>
+<title>stocksafety — منصة مراقبة المستودعات الذكية</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -1114,15 +1114,6 @@ table.data tbody tr:hover { background: var(--surface-2); }
 .toast-title { font-size: 12.5px; font-weight: 700; margin-bottom: 1px; }
 .toast-msg { font-size: 11px; color: var(--text-2); line-height: 1.4; }
 
-/* SKELETON */
-.skeleton {
-  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  border-radius: var(--radius);
-}
-@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
 /* UTIL */
 .mono { font-family: var(--mono); }
 .text-muted { color: var(--text-3); }
@@ -1176,9 +1167,9 @@ table.data tbody tr:hover { background: var(--surface-2); }
   <!-- ═══════════ SIDEBAR ═══════════ -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-      <div class="brand-mark">SS</div>
+      <div class="brand-mark">ss</div>
       <div class="brand-text">
-        <b>Stock Safety</b>
+        <b>stocksafety</b>
         <small>WAREHOUSE MONITOR</small>
       </div>
     </div>
@@ -1820,7 +1811,7 @@ table.data tbody tr:hover { background: var(--surface-2); }
 
 <script>
 /* ═══════════════════════════════════════════
-   STOCK SAFETY — DASHBOARD APP
+   STOCKSAFETY — DASHBOARD APP
    ═══════════════════════════════════════════ */
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -2239,7 +2230,6 @@ function renderRecentAlerts() {
     return;
   }
   container.innerHTML = recent.map(a => {
-    const sevClass = a.severity === 'crit' ? 'danger' : a.severity === 'warn' ? 'warning' : 'cyan';
     const sevLabel = a.severity === 'crit' ? 'حرج' : a.severity === 'warn' ? 'تحذير' : 'معلومة';
     return `
       <div class="feed-item">
@@ -2441,7 +2431,6 @@ function renderHeatmap() {
   state.zones.forEach(z => {
     html += `<div class="hm-label">${z.name}</div>`;
     for (let h = 0; h < 24; h++) {
-      // simulated historical temp
       const t = z.temp + Math.sin(h / 4) * 2 + rand(-1.5, 1.5);
       const intensity = clamp((t - 0) / 30, 0, 1);
       const r = Math.round(34 + intensity * 205);
@@ -2452,7 +2441,6 @@ function renderHeatmap() {
   });
   container.innerHTML = html;
 
-  // Legend
   const legend = $('#hmLegendBar');
   legend.innerHTML = '';
   for (let i = 0; i < 8; i++) {
@@ -2494,7 +2482,6 @@ function openZoneModal(zoneId) {
     <div class="chart-wrapper"><canvas id="zoneDetailChart"></canvas></div>
   `;
 
-  // Draw detail chart after DOM is ready
   setTimeout(() => {
     const ctx = $('#zoneDetailChart').getContext('2d');
     const gradT = ctx.createLinearGradient(0, 0, 0, 320);
@@ -2632,12 +2619,10 @@ function tick() {
 
   state.readingsTotal += state.zones.length;
 
-  // Update zones
   state.zones.forEach(z => {
     z.temp = clamp(z.temp + rand(-0.25, 0.25), z.tempMin - 5, z.tempMax + 5);
     z.hum = clamp(z.hum + rand(-1.2, 1.2), z.humMin - 15, z.humMax + 15);
 
-    // Push to history
     z.history.temp.push(z.temp);
     z.history.hum.push(z.hum);
     z.history.labels.push('');
@@ -2647,7 +2632,6 @@ function tick() {
       z.history.labels.shift();
     }
 
-    // Determine status
     const tOut = z.temp > z.tempMax || z.temp < z.tempMin;
     const hOut = z.hum > z.humMax || z.hum < z.humMin;
     const tSevere = z.temp > z.tempMax + 2 || z.temp < z.tempMin - 2;
@@ -2658,14 +2642,12 @@ function tick() {
     else if (tOut || hOut) z.status = 'warn';
     else z.status = 'ok';
 
-    // Trigger alerts
     if (z.status !== 'ok' && Math.random() < 0.12) {
       const useTemp = tOut || Math.random() < 0.5;
       const val = useTemp ? `${fmt(z.temp)}°C` : `${fmt(z.hum, 0)}%`;
       pushAlert(z, useTemp ? 'temp' : 'hum', val, z.status === 'crit' ? 'crit' : 'warn');
     }
 
-    // Status change event
     if (prevStatus !== z.status) {
       state.events.unshift({
         icon: z.status === 'ok' ? 'check' : 'alert',
@@ -2678,7 +2660,6 @@ function tick() {
     }
   });
 
-  // Update main chart
   if (state.charts.main) {
     const labels = state.zones[0].history.labels;
     const tAvg = labels.map((_, i) => state.zones.reduce((s, z) => s + z.history.temp[i], 0) / state.zones.length);
@@ -2689,7 +2670,6 @@ function tick() {
     state.charts.main.update('none');
   }
 
-  // Re-render current view dynamic content
   if (state.view === 'overview') {
     renderKPIs();
     renderRecentAlerts();
@@ -2698,7 +2678,6 @@ function tick() {
   if (state.view === 'zones') renderZoneGrid();
   if (state.view === 'analytics') renderAnalytics();
 
-  // Update sidebar metrics
   $('#activeDevices').textContent = `${state.devices.filter(d => d.online).length}/${state.devices.length}`;
   updateNavBadge();
 }
@@ -2715,16 +2694,13 @@ function pushAlert(zone, type, value, severity) {
   });
   if (state.alerts.length > 40) state.alerts.pop();
 
-  // Notify
   const label = severity === 'crit' ? 'حرج' : 'تحذير';
   toast(severity === 'crit' ? 'crit' : 'warn', `${zone.name} — تنبيه ${label}`, `${type === 'temp' ? 'حرارة' : 'رطوبة'}: ${value}`);
 
-  // Update views
   if (state.view === 'overview') { renderRecentAlerts(); renderKPIs(); }
   if (state.view === 'alerts') renderAlerts();
   updateNavBadge();
 
-  // Notif dot
   $('#notifDot').style.display = 'block';
 }
 
@@ -2759,7 +2735,7 @@ function exportCSV() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `stock-safety-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `stocksafety-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
   toast('success', 'تم التصدير', 'تم تنزيل ملف CSV بنجاح');
@@ -2779,38 +2755,31 @@ function toggleTheme() {
    EVENT BINDING
    ═══════════════════════════════════════════ */
 function bindEvents() {
-  // Nav
   $$('.nav-item').forEach(n => n.addEventListener('click', () => goTo(n.dataset.view)));
 
-  // Sidebar toggle (mobile)
   $('#sidebarToggle').addEventListener('click', () => {
     $('#sidebar').classList.toggle('open');
   });
 
-  // Theme
   $('#themeToggle').addEventListener('click', toggleTheme);
 
-  // Notifications
   $('#notifBtn').addEventListener('click', () => {
     openDrawer();
     $('#notifDot').style.display = 'none';
   });
 
-  // Drawer close
   $$('[data-close-drawer]').forEach(b => b.addEventListener('click', closeDrawer));
   $('#overlay').addEventListener('click', () => {
     closeDrawer();
     closePalette();
   });
 
-  // Palette
   $('#searchTrigger').addEventListener('click', openPalette);
   $('#paletteInput').addEventListener('input', e => renderPalette(e.target.value));
   $$('.palette-item').forEach(item => {
     item.addEventListener('click', () => { goTo(item.dataset.view); closePalette(); });
   });
 
-  // Modal close
   $$('[data-close-modal]').forEach(b => b.addEventListener('click', () => {
     $('#modalOverlay').classList.remove('show');
   }));
@@ -2818,7 +2787,6 @@ function bindEvents() {
     if (e.target.id === 'modalOverlay') $('#modalOverlay').classList.remove('show');
   });
 
-  // Keyboard
   document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
       e.preventDefault();
@@ -2837,7 +2805,6 @@ function bindEvents() {
     }
   });
 
-  // Filters
   $$('#zoneFilterChips .chip').forEach(c => c.addEventListener('click', () => {
     $$('#zoneFilterChips .chip').forEach(x => x.classList.remove('active'));
     c.classList.add('active');
@@ -2864,7 +2831,6 @@ function bindEvents() {
     renderAnalytics();
   }));
 
-  // Main chart series toggle
   $$('[data-series]').forEach(c => c.addEventListener('click', () => {
     $$('[data-series]').forEach(x => x.classList.remove('active'));
     c.classList.add('active');
@@ -2875,16 +2841,13 @@ function bindEvents() {
     state.charts.main.update();
   }));
 
-  // Refresh
   $('#refreshBtn').addEventListener('click', () => {
     tick();
     toast('info', 'تم التحديث', 'تم تحديث لوحة التحكم');
   });
 
-  // Export
   $('#exportBtn').addEventListener('click', exportCSV);
 
-  // Ack all
   $('#ackAllBtn').addEventListener('click', () => {
     state.alerts.forEach(a => a.active = false);
     renderAlerts();
@@ -2893,16 +2856,13 @@ function bindEvents() {
     toast('success', 'تم التأكيد', 'تم تأكيد جميع التنبيهات');
   });
 
-  // Zone search
   $('#zoneSearch').addEventListener('input', e => {
     state.zoneSearch = e.target.value;
     renderZoneGrid();
   });
 
-  // Device search
   $('#deviceSearch').addEventListener('input', renderDevices);
 
-  // Settings sliders
   const sliderBindings = [
     ['tempMinSlider', 'tempMinVal', '°C', 'tempMin'],
     ['tempMaxSlider', 'tempMaxVal', '°C', 'tempMax'],
@@ -2919,18 +2879,15 @@ function bindEvents() {
     });
   });
 
-  // Switches
   $$('[data-toggle]').forEach(sw => sw.addEventListener('click', () => {
     sw.classList.toggle('on');
     if (sw.id === 'themeSwitch') toggleTheme();
   }));
 
-  // Save settings
   $('#saveSettings').addEventListener('click', () => {
     toast('success', 'تم الحفظ', 'تم حفظ الإعدادات بنجاح');
   });
 
-  // Report cards
   $$('.report-card').forEach(card => card.addEventListener('click', () => {
     toast('info', 'توليد التقرير', 'جارٍ إعداد التقرير... (نسخة عرض توضيحية)');
   }));
@@ -2957,15 +2914,12 @@ function init() {
 
   bindEvents();
 
-  // Charts for initial view
   setTimeout(() => ensureCharts('overview'), 100);
 
-  // Intervals
   setInterval(tick, 2000);
   setInterval(updateUptime, 1000);
 
-  // Initial event
-  setTimeout(() => toast('info', 'مرحباً بك', 'نظام Stock Safety جاهز للعرض'), 800);
+  setTimeout(() => toast('info', 'مرحباً بك', 'نظام stocksafety جاهز للعرض'), 800);
 }
 
 init();
