@@ -336,6 +336,7 @@ svg { display: block; }
   color: #04121c;
   font-weight: 900;
   font-size: 11px;
+  flex-shrink: 0;
 }
 .user-chip .u-name { font-size: 12.5px; font-weight: 700; }
 .user-chip .u-role { font-size: 10px; color: var(--text-3); }
@@ -930,6 +931,60 @@ table.data tbody tr:hover { background: var(--surface-2); }
 .report-card h4 { font-size: 13.5px; font-weight: 800; margin-bottom: 4px; }
 .report-card p { font-size: 11.5px; color: var(--text-3); line-height: 1.5; margin-bottom: 14px; }
 
+/* PROFILE FORM */
+.field { margin-bottom: 14px; }
+.field:last-of-type { margin-bottom: 0; }
+.field label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+.field label .req { color: var(--danger); }
+.field input, .field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  outline: none;
+  transition: .15s;
+  font-size: 13px;
+}
+.field input::placeholder { color: var(--text-3); }
+.field input:focus, .field textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.profile-form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+.avatar-lg {
+  width: 64px; height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary), var(--violet));
+  display: grid; place-items: center;
+  color: #04121c;
+  font-weight: 900;
+  font-size: 22px;
+  flex-shrink: 0;
+  box-shadow: 0 8px 24px -8px var(--primary-glow);
+}
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
 /* ═══════════════════════════════════════════
    OVERLAYS
    ═══════════════════════════════════════════ */
@@ -1157,6 +1212,9 @@ table.data tbody tr:hover { background: var(--surface-2); }
   .kpi-grid { grid-template-columns: 1fr; }
   .heatmap { grid-template-columns: 60px repeat(24, 1fr); font-size: 8px; }
   .hm-cell { min-height: 10px; }
+  .field-row { grid-template-columns: 1fr; }
+  .user-chip .u-name, .user-chip .u-role { display: none; }
+  .user-chip { padding: 4px; }
 }
 </style>
 </head>
@@ -1264,11 +1322,11 @@ table.data tbody tr:hover { background: var(--surface-2); }
         <span class="indicator" id="notifDot" style="display:none"></span>
       </button>
 
-      <div class="user-chip">
-        <div class="user-avatar">م</div>
+      <div class="user-chip" id="userChip" title="تعديل الملف الشخصي">
+        <div class="user-avatar" id="userAvatar">؟</div>
         <div>
-          <div class="u-name">م. محمد العمري</div>
-          <div class="u-role">مدير المستودع</div>
+          <div class="u-name" id="userName">مستخدم</div>
+          <div class="u-role" id="userRole">—</div>
         </div>
       </div>
     </header>
@@ -1653,6 +1711,26 @@ table.data tbody tr:hover { background: var(--surface-2); }
         </div>
 
         <div class="grid-2">
+          <div class="card" style="grid-column: 1 / -1;">
+            <div class="card-head"><h3>الملف الشخصي</h3></div>
+            <div class="card-body">
+              <div class="profile-head">
+                <div class="avatar-lg" id="settingsAvatar">؟</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:15px;font-weight:800" id="settingsName">—</div>
+                  <div class="text-small text-muted" id="settingsRole">—</div>
+                  <div class="text-small text-muted" id="settingsEmail">—</div>
+                  <div class="text-small text-muted" id="settingsPhone">—</div>
+                </div>
+                <button class="btn btn-sm" id="editProfileBtn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  تعديل البيانات
+                </button>
+              </div>
+              <div class="text-small text-muted">يمكنك أيضاً تعديل ملفك الشخصي في أي وقت بالنقر على بطاقة المستخدم في الشريط العلوي.</div>
+            </div>
+          </div>
+
           <div class="card">
             <div class="card-head"><h3>حدود الحرارة</h3></div>
             <div class="card-body">
@@ -1807,6 +1885,57 @@ table.data tbody tr:hover { background: var(--surface-2); }
   </div>
 </div>
 
+<!-- PROFILE MODAL -->
+<div class="overlay" id="profileOverlay">
+  <div class="modal" style="width:min(480px,92vw)">
+    <div class="modal-head">
+      <div>
+        <h3 id="profileTitle">إعداد الملف الشخصي</h3>
+        <p id="profileSub">أدخل بياناتك لتخصيص تجربتك</p>
+      </div>
+      <button class="modal-close" data-close-profile aria-label="إغلاق">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="profile-head">
+        <div class="avatar-lg" id="profileAvatarPreview">؟</div>
+        <div>
+          <div style="font-size:13px;font-weight:800">معاينة الصورة الرمزية</div>
+          <div class="text-small text-muted">تظهر الأحرف الأولى من اسمك تلقائياً</div>
+        </div>
+      </div>
+      <form id="profileForm" novalidate>
+        <div class="field">
+          <label for="profileName">الاسم الكامل <span class="req">*</span></label>
+          <input type="text" id="profileName" placeholder="مثال: محمد العمري" maxlength="60" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label for="profileRole">المسمى الوظيفي</label>
+          <input type="text" id="profileRole" placeholder="مثال: مدير المستودع" maxlength="40">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="profileEmail">البريد الإلكتروني</label>
+            <input type="email" id="profileEmail" placeholder="name@company.com" maxlength="80" autocomplete="email">
+          </div>
+          <div class="field">
+            <label for="profilePhone">رقم الهاتف</label>
+            <input type="tel" id="profilePhone" placeholder="+966 5X XXX XXXX" maxlength="20" autocomplete="tel">
+          </div>
+        </div>
+        <div class="profile-form-actions">
+          <button type="button" class="btn btn-ghost" id="profileCancel">إلغاء</button>
+          <button type="submit" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            حفظ
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <div class="toasts" id="toasts"></div>
 
 <script>
@@ -1849,6 +1978,7 @@ const state = {
   theme: 'dark',
   uptimeStart: Date.now(),
   readingsTotal: 12847,
+  user: { name: '', role: '', email: '', phone: '' },
   zones: [],
   devices: [],
   alerts: [],
@@ -1861,6 +1991,97 @@ const state = {
   mainSeries: 'both',
   notifOpen: false
 };
+
+/* ═══════════════════════════════════════════
+   USER PROFILE
+   ═══════════════════════════════════════════ */
+const USER_KEY = 'stocksafety.user';
+
+function getInitials(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '؟';
+  const strip = w => w.replace(/^[^\u0600-\u06FFa-zA-Z]+/, '').replace(/^ال/, '');
+  const first = (strip(parts[0])[0] || parts[0][0] || '؟');
+  if (parts.length === 1) return first;
+  const last = strip(parts[parts.length - 1])[0] || '';
+  return (first + last).toUpperCase();
+}
+
+function loadUser() {
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    if (!raw) return false;
+    const u = JSON.parse(raw);
+    if (u && typeof u.name === 'string' && u.name.trim()) {
+      state.user = {
+        name: u.name.trim(),
+        role: (u.role || '').trim(),
+        email: (u.email || '').trim(),
+        phone: (u.phone || '').trim()
+      };
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
+
+function saveUser() {
+  try { localStorage.setItem(USER_KEY, JSON.stringify(state.user)); } catch (e) {}
+}
+
+function applyUser() {
+  const u = state.user;
+  const name = u.name || 'مستخدم';
+  const role = u.role || 'مستخدم';
+  $('#userName').textContent = name;
+  $('#userRole').textContent = role;
+  $('#userAvatar').textContent = getInitials(name);
+
+  const sName = $('#settingsName');
+  if (sName) {
+    $('#settingsName').textContent = name;
+    $('#settingsRole').textContent = role;
+    $('#settingsEmail').textContent = u.email || 'لا يوجد بريد إلكتروني';
+    $('#settingsPhone').textContent = u.phone || 'لا يوجد رقم هاتف';
+    $('#settingsAvatar').textContent = getInitials(name);
+  }
+}
+
+function openProfile(isSetup = false) {
+  $('#profileTitle').textContent = isSetup ? 'إعداد الملف الشخصي' : 'تعديل الملف الشخصي';
+  $('#profileSub').textContent = isSetup ? 'أدخل بياناتك لتخصيص تجربتك' : 'حدّث بياناتك الشخصية';
+  $('#profileName').value = state.user.name || '';
+  $('#profileRole').value = state.user.role || '';
+  $('#profileEmail').value = state.user.email || '';
+  $('#profilePhone').value = state.user.phone || '';
+  $('#profileAvatarPreview').textContent = getInitials(state.user.name || '؟');
+  $('#profileOverlay').classList.add('show');
+  setTimeout(() => $('#profileName').focus(), 80);
+}
+
+function closeProfile() {
+  $('#profileOverlay').classList.remove('show');
+}
+
+function handleProfileSubmit(e) {
+  e.preventDefault();
+  const name = $('#profileName').value.trim();
+  if (!name) {
+    toast('warn', 'الاسم مطلوب', 'الرجاء إدخال الاسم الكامل للمتابعة');
+    $('#profileName').focus();
+    return;
+  }
+  state.user = {
+    name,
+    role: $('#profileRole').value.trim() || 'مستخدم',
+    email: $('#profileEmail').value.trim(),
+    phone: $('#profilePhone').value.trim()
+  };
+  saveUser();
+  applyUser();
+  closeProfile();
+  toast('success', 'تم الحفظ', `مرحباً ${state.user.name} — تم تحديث ملفك الشخصي`);
+}
 
 /* ─── INITIAL ZONES ─── */
 const ZONE_DEFS = [
@@ -1892,7 +2113,6 @@ function initZones() {
       deviceCount: 3
     };
   });
-  // seed history
   state.zones.forEach(z => {
     let t = z.temp, h = z.hum;
     for (let i = 0; i < 60; i++) {
@@ -1905,7 +2125,6 @@ function initZones() {
   });
 }
 
-/* ─── INITIAL DEVICES ─── */
 function initDevices() {
   state.devices = [];
   state.zones.forEach(z => {
@@ -1924,7 +2143,6 @@ function initDevices() {
   });
 }
 
-/* ─── INITIAL ALERTS ─── */
 function initAlerts() {
   const samples = [
     { zone: 'CSA', type: 'temp', value: '9.4°C', severity: 'warn', active: true, time: '14:22:08' },
@@ -1939,14 +2157,12 @@ function initAlerts() {
   }));
 }
 
-/* ─── INITIAL EVENTS ─── */
 function initEvents() {
-  const events = [
+  state.events = [
     { icon: 'check', color: 'success', title: 'تم معايرة المستشعر CSA-S1', meta: 'تبريد A', time: now() },
     { icon: 'alert', color: 'warning', title: 'تنبيه رطوبة في منطقة الأدوية', meta: 'الأدوية', time: now() },
     { icon: 'wifi', color: 'info', title: 'اتصال جديد: بوابة SHP-GW', meta: 'الشحن', time: now() }
   ];
-  state.events = events;
 }
 
 /* ═══════════════════════════════════════════
@@ -1954,975 +2170,4 @@ function initEvents() {
    ═══════════════════════════════════════════ */
 const VIEW_TITLES = {
   overview: ['نظرة عامة', 'مراقبة لحظية لجميع المناطق'],
-  zones: ['المناطق', '8 مناطق تحت المراقبة'],
-  analytics: ['التحليلات', 'رؤى معمقة'],
-  alerts: ['التنبيهات', 'إدارة التنبيهات والإنذارات'],
-  devices: ['الأجهزة', 'المستشعرات والبوابات المتصلة'],
-  reports: ['التقارير', 'توليد وتنزيل التقارير'],
-  settings: ['الإعدادات', 'تخصيص حدود الإنذار']
-};
-
-function goTo(view) {
-  if (!VIEW_TITLES[view]) return;
-  state.view = view;
-  $$('.view').forEach(v => v.classList.toggle('active', v.dataset.view === view));
-  $$('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.view === view));
-  const [title, sub] = VIEW_TITLES[view];
-  $('#topbarTitle').innerHTML = `${title}<small>${sub}</small>`;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  // Close mobile sidebar
-  $('#sidebar').classList.remove('open');
-  // Lazy init charts for this view
-  ensureCharts(view);
-  // Re-render view-specific content
-  if (view === 'zones') renderZoneGrid();
-  if (view === 'alerts') renderAlerts();
-  if (view === 'devices') renderDevices();
-  if (view === 'analytics') renderAnalytics();
-}
-
-/* ═══════════════════════════════════════════
-   CHART MANAGEMENT
-   ═══════════════════════════════════════════ */
-function destroyChart(key) {
-  if (state.charts[key]) { state.charts[key].destroy(); delete state.charts[key]; }
-}
-
-function ensureCharts(view) {
-  if (view === 'overview') {
-    if (!state.charts.main) initMainChart();
-    if (!state.charts.gauge) initGaugeChart();
-    if (!state.charts.status) initStatusChart();
-  }
-  if (view === 'analytics') {
-    if (!state.charts.compare) initCompareChart();
-    if (!state.charts.radar) initRadarChart();
-    renderHeatmap();
-  }
-}
-
-/* ─── MAIN LINE CHART ─── */
-function initMainChart() {
-  const ctx = $('#mainChart').getContext('2d');
-  const gradT = ctx.createLinearGradient(0, 0, 0, 320);
-  gradT.addColorStop(0, 'rgba(34,211,238,.28)');
-  gradT.addColorStop(1, 'rgba(34,211,238,0)');
-  const gradH = ctx.createLinearGradient(0, 0, 0, 320);
-  gradH.addColorStop(0, 'rgba(167,139,250,.24)');
-  gradH.addColorStop(1, 'rgba(167,139,250,0)');
-
-  const avgTemp = state.zones.map(z => z.history.temp);
-  const avgHum = state.zones.map(z => z.history.hum);
-  const labels = state.zones[0].history.labels;
-  const tData = labels.map((_, i) => avgTemp.reduce((s, arr) => s + arr[i], 0) / avgTemp.length);
-  const hData = labels.map((_, i) => avgHum.reduce((s, arr) => s + arr[i], 0) / avgHum.length);
-
-  state.charts.main = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label: 'الحرارة (°C)', data: tData, borderColor: '#22d3ee', backgroundColor: gradT, borderWidth: 2.2, tension: .4, pointRadius: 0, pointHoverRadius: 4, fill: true, yAxisID: 'y' },
-        { label: 'الرطوبة (%)', data: hData, borderColor: '#a78bfa', backgroundColor: gradH, borderWidth: 2.2, tension: .4, pointRadius: 0, pointHoverRadius: 4, fill: true, yAxisID: 'y1', hidden: false }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      animation: { duration: 350 },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#0f1724', borderColor: 'rgba(255,255,255,.1)', borderWidth: 1,
-          padding: 10, cornerRadius: 8, titleColor: '#e8eef8', bodyColor: '#8b9cb4',
-          titleFont: { weight: '700', size: 11 }, bodyFont: { size: 11 }
-        }
-      },
-      scales: {
-        x: { grid: { display: false }, ticks: { display: false } },
-        y: { position: 'right', grid: { color: 'rgba(255,255,255,.04)' }, ticks: { callback: v => v + '°', font: { size: 10 } }, suggestedMin: 0, suggestedMax: 25 },
-        y1: { position: 'left', grid: { display: false }, ticks: { callback: v => v + '%', font: { size: 10 } }, suggestedMin: 20, suggestedMax: 80 }
-      }
-    }
-  });
-}
-
-/* ─── GAUGE CHART ─── */
-function initGaugeChart() {
-  const ctx = $('#gaugeChart').getContext('2d');
-  state.charts.gauge = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: ['آمنة', 'تحذير', 'خطر'],
-      datasets: [{ data: [8, 0, 0], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0, cutout: '78%', hoverOffset: 4 }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      animation: { duration: 500 },
-      plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#0f1724', padding: 8, cornerRadius: 6 } }
-    }
-  });
-}
-
-/* ─── STATUS DOUGHNUT ─── */
-function initStatusChart() {
-  const ctx = $('#statusChart').getContext('2d');
-  state.charts.status = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: ['آمنة', 'تحذيرية', 'حرجة'],
-      datasets: [{ data: [8, 0, 0], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderColor: '#0a1019', borderWidth: 3, cutout: '62%' }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'bottom', labels: { boxWidth: 8, boxHeight: 8, padding: 12, usePointStyle: true, pointStyle: 'circle', font: { size: 10 } } },
-        tooltip: { backgroundColor: '#0f1724', padding: 8, cornerRadius: 6 }
-      }
-    }
-  });
-}
-
-/* ─── COMPARE BAR CHART ─── */
-function initCompareChart() {
-  const ctx = $('#compareChart').getContext('2d');
-  state.charts.compare = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: state.zones.map(z => z.name),
-      datasets: [
-        { label: 'الحرارة', data: state.zones.map(z => z.temp), backgroundColor: 'rgba(34,211,238,.7)', borderRadius: 4, barThickness: 14 },
-        { label: 'الرطوبة', data: state.zones.map(z => z.hum), backgroundColor: 'rgba(167,139,250,.6)', borderRadius: 4, barThickness: 14 }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      animation: { duration: 400 },
-      plugins: {
-        legend: { position: 'top', align: 'end', labels: { boxWidth: 8, boxHeight: 8, usePointStyle: true, pointStyle: 'circle', font: { size: 10 } } },
-        tooltip: { backgroundColor: '#0f1724', padding: 8, cornerRadius: 6, titleFont: { size: 11 }, bodyFont: { size: 11 } }
-      },
-      scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-        y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { font: { size: 10 } } }
-      }
-    }
-  });
-}
-
-/* ─── RADAR CHART ─── */
-function initRadarChart() {
-  const ctx = $('#radarChart').getContext('2d');
-  state.charts.radar = new Chart(ctx, {
-    type: 'radar',
-    data: {
-      labels: state.zones.map(z => z.name),
-      datasets: [{
-        label: 'مؤشر الصحة',
-        data: state.zones.map(z => z.status === 'ok' ? rand(85, 100) : z.status === 'warn' ? rand(55, 75) : rand(30, 50)),
-        borderColor: '#22d3ee',
-        backgroundColor: 'rgba(34,211,238,.15)',
-        borderWidth: 2,
-        pointBackgroundColor: '#22d3ee',
-        pointBorderColor: '#0a1019',
-        pointBorderWidth: 2,
-        pointRadius: 3
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      animation: { duration: 400 },
-      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f1724', padding: 8, cornerRadius: 6 } },
-      scales: {
-        r: {
-          min: 0, max: 100,
-          ticks: { display: false, stepSize: 25 },
-          grid: { color: 'rgba(255,255,255,.06)' },
-          angleLines: { color: 'rgba(255,255,255,.06)' },
-          pointLabels: { color: '#8b9cb4', font: { size: 9 } }
-        }
-      }
-    }
-  });
-}
-
-/* ═══════════════════════════════════════════
-   RENDER: OVERVIEW
-   ═══════════════════════════════════════════ */
-function renderKPIs() {
-  const avgTemp = state.zones.reduce((s, z) => s + z.temp, 0) / state.zones.length;
-  const avgHum = state.zones.reduce((s, z) => s + z.hum, 0) / state.zones.length;
-  const safeCount = state.zones.filter(z => z.status === 'ok').length;
-  const safePct = Math.round(safeCount / state.zones.length * 100);
-  const activeAlerts = state.alerts.filter(a => a.active).length;
-
-  const kpis = [
-    { label: 'متوسط الحرارة', value: fmt(avgTemp), unit: '°C', icon: 'temp', accent: 'var(--primary)', accentBg: 'rgba(34,211,238,.1)', trend: 'up', trendVal: fmt(rand(0.1, 0.8), 1), spark: avgSpark('temp') },
-    { label: 'متوسط الرطوبة', value: fmt(avgHum, 0), unit: '%', icon: 'hum', accent: 'var(--violet)', accentBg: 'rgba(167,139,250,.1)', trend: 'flat', trendVal: 'مستقر', spark: avgSpark('hum') },
-    { label: 'مؤشر السلامة', value: safePct, unit: '%', icon: 'shield', accent: 'var(--success)', accentBg: 'rgba(16,185,129,.1)', trend: safePct === 100 ? 'up' : 'down', trendVal: safePct === 100 ? 'ممتاز' : safePct + '%', spark: null },
-    { label: 'تنبيهات نشطة', value: activeAlerts, unit: '', icon: 'bell', accent: 'var(--danger)', accentBg: 'rgba(239,68,68,.1)', trend: activeAlerts === 0 ? 'up' : 'down', trendVal: activeAlerts === 0 ? 'لا يوجد' : activeAlerts, spark: null }
-  ];
-
-  $('#kpiGrid').innerHTML = kpis.map(k => `
-    <div class="kpi" style="--accent: ${k.accent}; --accent-bg: ${k.accentBg};">
-      <div class="kpi-top">
-        <div class="kpi-icon">${ICONS[k.icon]}</div>
-        <div class="kpi-trend trend-${k.trend}">
-          ${k.trend === 'up' ? ICONS.arrowUp : k.trend === 'down' ? ICONS.arrowDown : ICONS.minus}
-          ${k.trendVal}
-        </div>
-      </div>
-      <div class="kpi-value">${k.value}<small>${k.unit}</small></div>
-      <div class="kpi-label">${k.label}</div>
-      ${k.spark ? `<div class="kpi-spark">${k.spark}</div>` : ''}
-    </div>
-  `).join('');
-
-  // Gauge update
-  if (state.charts.gauge) {
-    const safe = state.zones.filter(z => z.status === 'ok').length;
-    const warn = state.zones.filter(z => z.status === 'warn').length;
-    const crit = state.zones.filter(z => z.status === 'crit').length;
-    state.charts.gauge.data.datasets[0].data = [safe, warn, crit];
-    state.charts.gauge.update('none');
-  }
-  $('#gaugeValue').innerHTML = `${safePct}<small>%</small>`;
-
-  // Status chart update
-  if (state.charts.status) {
-    const safe = state.zones.filter(z => z.status === 'ok').length;
-    const warn = state.zones.filter(z => z.status === 'warn').length;
-    const crit = state.zones.filter(z => z.status === 'crit').length;
-    state.charts.status.data.datasets[0].data = [safe, warn, crit];
-    state.charts.status.update('none');
-  }
-
-  // Update insight
-  const insight = $('#insightBody');
-  if (activeAlerts === 0) {
-    insight.innerHTML = `<h5>النظام يعمل بكفاءة</h5><p>جميع المناطق ضمن النطاق المثالي. لا توجد إجراءات مطلوبة حالياً.</p>`;
-  } else {
-    insight.innerHTML = `<h5>${activeAlerts} تنبيه نشط</h5><p>يُنصح بمراجعة التنبيهات النشطة والتحقق من المناطق المتأثرة.</p>`;
-  }
-}
-
-function avgSpark(type) {
-  const arr = state.zones[0].history[type].slice(-20);
-  const min = Math.min(...arr), max = Math.max(...arr);
-  const range = max - min || 1;
-  const w = 140, h = 28;
-  const points = arr.map((v, i) => {
-    const x = (i / (arr.length - 1)) * w;
-    const y = h - ((v - min) / range) * h;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(' ');
-  const color = type === 'temp' ? '#22d3ee' : '#a78bfa';
-  return `<svg viewBox="0 0 140 28" preserveAspectRatio="none" style="width:100%;height:28px">
-    <polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
-  </svg>`;
-}
-
-function renderRecentAlerts() {
-  const recent = state.alerts.slice(0, 3);
-  const container = $('#recentAlerts');
-  if (recent.length === 0) {
-    container.innerHTML = `<div class="empty-state" style="padding:24px"><h4>لا توجد تنبيهات</h4><p>كل شيء تحت السيطرة</p></div>`;
-    return;
-  }
-  container.innerHTML = recent.map(a => {
-    const sevLabel = a.severity === 'crit' ? 'حرج' : a.severity === 'warn' ? 'تحذير' : 'معلومة';
-    return `
-      <div class="feed-item">
-        <div class="feed-icon" style="background:rgba(239,68,68,.1);color:var(--danger)">
-          ${ICONS.alert}
-        </div>
-        <div class="feed-body">
-          <div class="feed-title">${a.zoneName}</div>
-          <div class="feed-meta">${a.value} — ${sevLabel}</div>
-        </div>
-        <div class="feed-time">${a.time}</div>
-      </div>
-    `;
-  }).join('');
-}
-
-function renderLiveFeed() {
-  const container = $('#liveFeed');
-  container.innerHTML = state.events.slice(0, 6).map(e => {
-    const colorMap = { success: 'var(--success)', warning: 'var(--warning)', info: 'var(--info)', danger: 'var(--danger)' };
-    const bgMap = { success: 'rgba(16,185,129,.1)', warning: 'rgba(245,158,11,.1)', info: 'rgba(59,130,246,.1)', danger: 'rgba(239,68,68,.1)' };
-    return `
-      <div class="feed-item">
-        <div class="feed-icon" style="background:${bgMap[e.color] || bgMap.info};color:${colorMap[e.color] || colorMap.info}">
-          ${ICONS[e.icon] || ICONS.info}
-        </div>
-        <div class="feed-body">
-          <div class="feed-title">${e.title}</div>
-          <div class="feed-meta">${e.meta}</div>
-        </div>
-        <div class="feed-time">${e.time}</div>
-      </div>
-    `;
-  }).join('');
-}
-
-/* ═══════════════════════════════════════════
-   RENDER: ZONES
-   ═══════════════════════════════════════════ */
-function renderZoneGrid() {
-  let zones = state.zones;
-  if (state.zoneFilter !== 'all') zones = zones.filter(z => z.status === state.zoneFilter);
-  if (state.zoneSearch) {
-    const q = state.zoneSearch.toLowerCase();
-    zones = zones.filter(z => z.name.toLowerCase().includes(q) || z.id.toLowerCase().includes(q));
-  }
-
-  const grid = $('#zoneGrid');
-  if (zones.length === 0) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><h4>لا توجد نتائج</h4><p>جرب تغيير الفلاتر أو البحث</p></div>`;
-    return;
-  }
-
-  grid.innerHTML = zones.map(z => {
-    const statusClass = z.status === 'ok' ? 'status-ok' : z.status === 'warn' ? 'status-warn' : 'status-crit';
-    const statusLabel = z.status === 'ok' ? 'آمنة' : z.status === 'warn' ? 'تحذير' : 'حرجة';
-    const zoneColor = z.status === 'ok' ? 'var(--success)' : z.status === 'warn' ? 'var(--warning)' : 'var(--danger)';
-    return `
-      <div class="zone-card" data-zone="${z.id}" style="--zone-color: ${zoneColor}">
-        <div class="zone-head">
-          <div>
-            <div class="zone-name">${z.name}</div>
-            <div class="zone-id">${z.id} · ${z.desc}</div>
-          </div>
-          <span class="status-badge ${statusClass}"><span class="status-dot"></span>${statusLabel}</span>
-        </div>
-        <div class="zone-metrics">
-          <div class="zm">
-            <div class="zm-label">${ICONS.temp} الحرارة</div>
-            <div class="zm-value">${fmt(z.temp)}<small>°C</small></div>
-          </div>
-          <div class="zm">
-            <div class="zm-label">${ICONS.hum} الرطوبة</div>
-            <div class="zm-value">${fmt(z.hum, 0)}<small>%</small></div>
-          </div>
-        </div>
-        <div class="zone-footer">
-          <div class="mini">${ICONS.wifi} ${z.deviceCount} أجهزة</div>
-          <div class="mini">${ICONS.clock} قبل ${Math.round(rand(1, 8))}د</div>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  grid.querySelectorAll('.zone-card').forEach(card => {
-    card.addEventListener('click', () => openZoneModal(card.dataset.zone));
-  });
-}
-
-/* ═══════════════════════════════════════════
-   RENDER: ALERTS
-   ═══════════════════════════════════════════ */
-function renderAlerts() {
-  let list = state.alerts;
-  const filter = state.alertFilter;
-  if (filter === 'active') list = list.filter(a => a.active);
-  else if (filter === 'crit') list = list.filter(a => a.severity === 'crit');
-  else if (filter === 'warn') list = list.filter(a => a.severity === 'warn');
-  else if (filter === 'resolved') list = list.filter(a => !a.active);
-
-  const body = $('#alertsBody');
-  if (list.length === 0) {
-    body.innerHTML = `<tr><td colspan="7"><div class="empty-state"><h4>لا توجد تنبيهات</h4><p>كل شيء تحت السيطرة</p></div></td></tr>`;
-    return;
-  }
-
-  body.innerHTML = list.map((a, i) => {
-    const sevClass = a.severity === 'crit' ? 'badge-danger' : a.severity === 'warn' ? 'badge-warning' : 'badge-cyan';
-    const sevLabel = a.severity === 'crit' ? 'حرج' : a.severity === 'warn' ? 'تحذير' : 'معلومة';
-    const typeLabel = a.type === 'temp' ? 'حرارة' : a.type === 'hum' ? 'رطوبة' : a.type === 'door' ? 'باب' : 'كهرباء';
-    const typeClass = a.type === 'temp' ? 'badge-danger' : a.type === 'hum' ? 'badge-cyan' : a.type === 'door' ? 'badge-violet' : 'badge-warning';
-    return `
-      <tr>
-        <td class="mono text-muted">${a.time}</td>
-        <td style="font-weight:700">${a.zoneName}</td>
-        <td><span class="badge ${typeClass}">${typeLabel}</span></td>
-        <td style="font-weight:700">${a.value}</td>
-        <td><span class="badge ${sevClass}">${sevLabel}</span></td>
-        <td>${a.active ? '<span class="badge badge-warning"><span class="status-dot" style="background:var(--warning)"></span>نشط</span>' : '<span class="badge badge-success"><span class="status-dot" style="background:var(--success)"></span>معالج</span>'}</td>
-        <td>${a.active ? `<button class="btn btn-sm btn-ghost" data-ack="${a.time}">تأكيد</button>` : '<span class="text-muted text-small">—</span>'}</td>
-      </tr>
-    `;
-  }).join('');
-
-  body.querySelectorAll('[data-ack]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const a = state.alerts.find(x => x.time === btn.dataset.ack);
-      if (a) { a.active = false; renderAlerts(); renderKPIs(); updateNavBadge(); toast('success', 'تم التأكيد', `تم تأكيد التنبيه في ${a.zoneName}`); }
-    });
-  });
-}
-
-/* ═══════════════════════════════════════════
-   RENDER: DEVICES
-   ═══════════════════════════════════════════ */
-function renderDevices() {
-  let list = state.devices;
-  if ($('#deviceSearch') && $('#deviceSearch').value) {
-    const q = $('#deviceSearch').value.toLowerCase();
-    list = list.filter(d => d.name.toLowerCase().includes(q) || d.id.toLowerCase().includes(q));
-  }
-
-  const container = $('#deviceList');
-  if (list.length === 0) {
-    container.innerHTML = `<div class="empty-state"><h4>لا توجد أجهزة</h4><p>جرب البحث بكلمة أخرى</p></div>`;
-    return;
-  }
-
-  container.innerHTML = list.map(d => {
-    const batColor = d.battery > 50 ? 'var(--success)' : d.battery > 20 ? 'var(--warning)' : 'var(--danger)';
-    return `
-      <div class="device-row">
-        <div class="device-icon">${ICONS.cpu}</div>
-        <div class="device-info">
-          <div class="name">${d.name}</div>
-          <div class="id">${d.id} · ${d.zoneName}</div>
-        </div>
-        <div class="device-meta">
-          <div class="item" style="color:${d.online ? 'var(--success)' : 'var(--text-3)'}">
-            ${ICONS.wifi} ${d.online ? 'متصل' : 'غير متصل'}
-          </div>
-          <div class="item" style="color:${batColor}">
-            ${ICONS.battery} ${d.battery}%
-          </div>
-          <div class="item text-muted">${ICONS.clock} قبل ${d.lastSeen}د</div>
-          <span class="badge badge-muted">${d.signal}%</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  $('#statDevices').textContent = state.devices.length;
-  $('#statOnline').textContent = state.devices.filter(d => d.online).length;
-  $('#statBattery').textContent = state.devices.filter(d => d.battery < 25).length;
-}
-
-/* ═══════════════════════════════════════════
-   RENDER: ANALYTICS
-   ═══════════════════════════════════════════ */
-function renderAnalytics() {
-  if (state.charts.compare) {
-    state.charts.compare.data.datasets[0].data = state.zones.map(z => z.temp);
-    state.charts.compare.data.datasets[1].data = state.zones.map(z => z.hum);
-    state.charts.compare.update('none');
-  }
-  if (state.charts.radar) {
-    state.charts.radar.data.datasets[0].data = state.zones.map(z =>
-      z.status === 'ok' ? rand(85, 100) : z.status === 'warn' ? rand(55, 75) : rand(30, 50)
-    );
-    state.charts.radar.update('none');
-  }
-  $('#statReadings').textContent = state.readingsTotal.toLocaleString('en-US');
-}
-
-function renderHeatmap() {
-  const container = $('#heatmap');
-  let html = '<div class="hm-label"></div>';
-  for (let h = 0; h < 24; h++) html += `<div class="hm-head">${h}</div>`;
-  state.zones.forEach(z => {
-    html += `<div class="hm-label">${z.name}</div>`;
-    for (let h = 0; h < 24; h++) {
-      const t = z.temp + Math.sin(h / 4) * 2 + rand(-1.5, 1.5);
-      const intensity = clamp((t - 0) / 30, 0, 1);
-      const r = Math.round(34 + intensity * 205);
-      const g = Math.round(211 - intensity * 100);
-      const b = Math.round(238 - intensity * 120);
-      html += `<div class="hm-cell" style="background:rgb(${r},${g},${b})" title="${z.name} — ${h}:00 — ${fmt(t)}°C"></div>`;
-    }
-  });
-  container.innerHTML = html;
-
-  const legend = $('#hmLegendBar');
-  legend.innerHTML = '';
-  for (let i = 0; i < 8; i++) {
-    const intensity = i / 7;
-    const r = Math.round(34 + intensity * 205);
-    const g = Math.round(211 - intensity * 100);
-    const b = Math.round(238 - intensity * 120);
-    const span = document.createElement('span');
-    span.style.background = `rgb(${r},${g},${b})`;
-    legend.appendChild(span);
-  }
-}
-
-/* ═══════════════════════════════════════════
-   ZONE MODAL
-   ═══════════════════════════════════════════ */
-function openZoneModal(zoneId) {
-  const z = state.zones.find(x => x.id === zoneId);
-  if (!z) return;
-
-  $('#modalTitle').textContent = z.name;
-  $('#modalSub').textContent = `${z.id} · ${z.desc}`;
-  $('#modalBody').innerHTML = `
-    <div class="grid-3 mb-4">
-      <div class="zm" style="padding:14px">
-        <div class="zm-label">${ICONS.temp} الحرارة</div>
-        <div class="zm-value" style="font-size:22px">${fmt(z.temp)}<small>°C</small></div>
-      </div>
-      <div class="zm" style="padding:14px">
-        <div class="zm-label">${ICONS.hum} الرطوبة</div>
-        <div class="zm-value" style="font-size:22px">${fmt(z.hum, 0)}<small>%</small></div>
-      </div>
-      <div class="zm" style="padding:14px">
-        <div class="zm-label">${ICONS.cpu} الأجهزة</div>
-        <div class="zm-value" style="font-size:22px">${z.deviceCount}<small>وحدات</small></div>
-      </div>
-    </div>
-    <div class="card-head" style="padding:0 0 12px;border:none"><h3>السجل (60 قراءة)</h3></div>
-    <div class="chart-wrapper"><canvas id="zoneDetailChart"></canvas></div>
-  `;
-
-  setTimeout(() => {
-    const ctx = $('#zoneDetailChart').getContext('2d');
-    const gradT = ctx.createLinearGradient(0, 0, 0, 320);
-    gradT.addColorStop(0, 'rgba(34,211,238,.28)');
-    gradT.addColorStop(1, 'rgba(34,211,238,0)');
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: z.history.labels,
-        datasets: [
-          { label: 'الحرارة', data: z.history.temp, borderColor: '#22d3ee', backgroundColor: gradT, borderWidth: 2, tension: .4, pointRadius: 0, fill: true, yAxisID: 'y' },
-          { label: 'الرطوبة', data: z.history.hum, borderColor: '#a78bfa', borderWidth: 2, tension: .4, pointRadius: 0, yAxisID: 'y1' }
-        ]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { labels: { font: { size: 10 }, usePointStyle: true, pointStyle: 'circle', boxWidth: 6 } } },
-        scales: {
-          x: { grid: { display: false }, ticks: { display: false } },
-          y: { position: 'right', grid: { color: 'rgba(255,255,255,.04)' }, ticks: { callback: v => v + '°', font: { size: 9 } } },
-          y1: { position: 'left', grid: { display: false }, ticks: { callback: v => v + '%', font: { size: 9 } } }
-        }
-      }
-    });
-  }, 50);
-
-  $('#modalOverlay').classList.add('show');
-}
-
-/* ═══════════════════════════════════════════
-   NOTIFICATIONS DRAWER
-   ═══════════════════════════════════════════ */
-function openDrawer() {
-  const list = $('#notifList');
-  const notifs = state.alerts.slice(0, 8);
-  if (notifs.length === 0) {
-    list.innerHTML = `<div class="empty-state"><h4>لا توجد إشعارات</h4><p>ستظهر هنا التنبيهات الجديدة</p></div>`;
-  } else {
-    list.innerHTML = notifs.map(a => `
-      <div class="feed-item">
-        <div class="feed-icon" style="background:rgba(239,68,68,.1);color:var(--danger)">${ICONS.alert}</div>
-        <div class="feed-body">
-          <div class="feed-title">${a.zoneName}</div>
-          <div class="feed-meta">${a.value} · ${a.severity === 'crit' ? 'حرج' : a.severity === 'warn' ? 'تحذير' : 'معلومة'}</div>
-        </div>
-        <div class="feed-time">${a.time}</div>
-      </div>
-    `).join('');
-  }
-  $('#notifDrawer').classList.add('show');
-  $('#overlay').classList.add('show');
-}
-
-function closeDrawer() {
-  $('#notifDrawer').classList.remove('show');
-  $('#overlay').classList.remove('show');
-}
-
-/* ═══════════════════════════════════════════
-   COMMAND PALETTE
-   ═══════════════════════════════════════════ */
-const PALETTE_ITEMS = [
-  { label: 'نظرة عامة', hint: 'لوحة التحكم', view: 'overview', icon: 'chart' },
-  { label: 'المناطق', hint: 'عرض المناطق', view: 'zones', icon: 'cpu' },
-  { label: 'التحليلات', hint: 'رؤى معمقة', view: 'analytics', icon: 'chart' },
-  { label: 'التنبيهات', hint: 'إدارة التنبيهات', view: 'alerts', icon: 'bell' },
-  { label: 'الأجهزة', hint: 'قائمة الأجهزة', view: 'devices', icon: 'cpu' },
-  { label: 'التقارير', hint: 'توليد التقارير', view: 'reports', icon: 'chart' },
-  { label: 'الإعدادات', hint: 'حدود الإنذار', view: 'settings', icon: 'shield' }
-];
-
-function openPalette() {
-  $('#paletteOverlay').classList.add('show');
-  $('#paletteInput').value = '';
-  renderPalette('');
-  setTimeout(() => $('#paletteInput').focus(), 50);
-}
-
-function closePalette() {
-  $('#paletteOverlay').classList.remove('show');
-}
-
-function renderPalette(query) {
-  const q = query.toLowerCase();
-  const filtered = PALETTE_ITEMS.filter(p => p.label.includes(q) || p.hint.toLowerCase().includes(q));
-  const list = $('#paletteList');
-  if (filtered.length === 0) {
-    list.innerHTML = `<div class="palette-empty">لا توجد نتائج</div>`;
-    return;
-  }
-  list.innerHTML = filtered.map((p, i) => `
-    <div class="palette-item ${i === 0 ? 'active' : ''}" data-view="${p.view}">
-      <div class="icon">${ICONS[p.icon]}</div>
-      <div class="label">${p.label}</div>
-      <div class="hint">${p.hint}</div>
-    </div>
-  `).join('');
-  list.querySelectorAll('.palette-item').forEach(item => {
-    item.addEventListener('click', () => {
-      goTo(item.dataset.view);
-      closePalette();
-    });
-  });
-}
-
-/* ═══════════════════════════════════════════
-   TOASTS
-   ═══════════════════════════════════════════ */
-function toast(type, title, msg) {
-  const container = $('#toasts');
-  const el = document.createElement('div');
-  el.className = `toast ${type === 'success' ? 'success' : type === 'warn' ? 'warn' : type === 'crit' ? 'crit' : ''}`;
-  const iconMap = { success: ICONS.check, warn: ICONS.alert, crit: ICONS.alert, info: ICONS.info };
-  el.innerHTML = `
-    <div class="toast-icon">${iconMap[type] || ICONS.info}</div>
-    <div class="toast-body">
-      <div class="toast-title">${title}</div>
-      <div class="toast-msg">${msg}</div>
-    </div>
-  `;
-  container.appendChild(el);
-  setTimeout(() => {
-    el.style.transition = 'opacity .3s, transform .3s';
-    el.style.opacity = '0';
-    el.style.transform = 'translateX(-30px)';
-    setTimeout(() => el.remove(), 300);
-  }, 4000);
-}
-
-/* ═══════════════════════════════════════════
-   LIVE SIMULATION
-   ═══════════════════════════════════════════ */
-function tick() {
-  if (state.paused) return;
-
-  state.readingsTotal += state.zones.length;
-
-  state.zones.forEach(z => {
-    z.temp = clamp(z.temp + rand(-0.25, 0.25), z.tempMin - 5, z.tempMax + 5);
-    z.hum = clamp(z.hum + rand(-1.2, 1.2), z.humMin - 15, z.humMax + 15);
-
-    z.history.temp.push(z.temp);
-    z.history.hum.push(z.hum);
-    z.history.labels.push('');
-    if (z.history.temp.length > 60) {
-      z.history.temp.shift();
-      z.history.hum.shift();
-      z.history.labels.shift();
-    }
-
-    const tOut = z.temp > z.tempMax || z.temp < z.tempMin;
-    const hOut = z.hum > z.humMax || z.hum < z.humMin;
-    const tSevere = z.temp > z.tempMax + 2 || z.temp < z.tempMin - 2;
-    const hSevere = z.hum > z.humMax + 10 || z.hum < z.humMin - 10;
-
-    const prevStatus = z.status;
-    if (tSevere || hSevere) z.status = 'crit';
-    else if (tOut || hOut) z.status = 'warn';
-    else z.status = 'ok';
-
-    if (z.status !== 'ok' && Math.random() < 0.12) {
-      const useTemp = tOut || Math.random() < 0.5;
-      const val = useTemp ? `${fmt(z.temp)}°C` : `${fmt(z.hum, 0)}%`;
-      pushAlert(z, useTemp ? 'temp' : 'hum', val, z.status === 'crit' ? 'crit' : 'warn');
-    }
-
-    if (prevStatus !== z.status) {
-      state.events.unshift({
-        icon: z.status === 'ok' ? 'check' : 'alert',
-        color: z.status === 'ok' ? 'success' : z.status === 'warn' ? 'warning' : 'danger',
-        title: `تغيّر حالة ${z.name} إلى ${z.status === 'ok' ? 'آمنة' : z.status === 'warn' ? 'تحذيرية' : 'حرجة'}`,
-        meta: z.id,
-        time: now()
-      });
-      if (state.events.length > 20) state.events.pop();
-    }
-  });
-
-  if (state.charts.main) {
-    const labels = state.zones[0].history.labels;
-    const tAvg = labels.map((_, i) => state.zones.reduce((s, z) => s + z.history.temp[i], 0) / state.zones.length);
-    const hAvg = labels.map((_, i) => state.zones.reduce((s, z) => s + z.history.hum[i], 0) / state.zones.length);
-    state.charts.main.data.labels = labels;
-    state.charts.main.data.datasets[0].data = tAvg;
-    state.charts.main.data.datasets[1].data = hAvg;
-    state.charts.main.update('none');
-  }
-
-  if (state.view === 'overview') {
-    renderKPIs();
-    renderRecentAlerts();
-    renderLiveFeed();
-  }
-  if (state.view === 'zones') renderZoneGrid();
-  if (state.view === 'analytics') renderAnalytics();
-
-  $('#activeDevices').textContent = `${state.devices.filter(d => d.online).length}/${state.devices.length}`;
-  updateNavBadge();
-}
-
-function pushAlert(zone, type, value, severity) {
-  state.alerts.unshift({
-    time: now(),
-    zone: zone.id,
-    zoneName: zone.name,
-    type,
-    value,
-    severity,
-    active: true
-  });
-  if (state.alerts.length > 40) state.alerts.pop();
-
-  const label = severity === 'crit' ? 'حرج' : 'تحذير';
-  toast(severity === 'crit' ? 'crit' : 'warn', `${zone.name} — تنبيه ${label}`, `${type === 'temp' ? 'حرارة' : 'رطوبة'}: ${value}`);
-
-  if (state.view === 'overview') { renderRecentAlerts(); renderKPIs(); }
-  if (state.view === 'alerts') renderAlerts();
-  updateNavBadge();
-
-  $('#notifDot').style.display = 'block';
-}
-
-function updateNavBadge() {
-  const n = state.alerts.filter(a => a.active).length;
-  const badge = $('#navAlertBadge');
-  badge.textContent = n;
-  badge.classList.toggle('show', n > 0);
-}
-
-/* ═══════════════════════════════════════════
-   UPTIME
-   ═══════════════════════════════════════════ */
-function updateUptime() {
-  const elapsed = Math.floor((Date.now() - state.uptimeStart) / 1000);
-  const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
-  const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
-  const s = String(elapsed % 60).padStart(2, '0');
-  $('#uptime').textContent = `${h}:${m}:${s}`;
-}
-
-/* ═══════════════════════════════════════════
-   CSV EXPORT
-   ═══════════════════════════════════════════ */
-function exportCSV() {
-  const rows = [['Zone ID', 'Zone Name', 'Temperature', 'Humidity', 'Status', 'Min Temp', 'Max Temp', 'Min Hum', 'Max Hum']];
-  state.zones.forEach(z => {
-    rows.push([z.id, z.name, fmt(z.temp), fmt(z.hum, 0), z.status, z.tempMin, z.tempMax, z.humMin, z.humMax]);
-  });
-  const csv = rows.map(r => r.join(',')).join('\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `stocksafety-${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-  toast('success', 'تم التصدير', 'تم تنزيل ملف CSV بنجاح');
-}
-
-/* ═══════════════════════════════════════════
-   THEME TOGGLE
-   ═══════════════════════════════════════════ */
-function toggleTheme() {
-  state.theme = state.theme === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', state.theme);
-  const sw = $('#themeSwitch');
-  if (sw) sw.classList.toggle('on', state.theme === 'light');
-}
-
-/* ═══════════════════════════════════════════
-   EVENT BINDING
-   ═══════════════════════════════════════════ */
-function bindEvents() {
-  $$('.nav-item').forEach(n => n.addEventListener('click', () => goTo(n.dataset.view)));
-
-  $('#sidebarToggle').addEventListener('click', () => {
-    $('#sidebar').classList.toggle('open');
-  });
-
-  $('#themeToggle').addEventListener('click', toggleTheme);
-
-  $('#notifBtn').addEventListener('click', () => {
-    openDrawer();
-    $('#notifDot').style.display = 'none';
-  });
-
-  $$('[data-close-drawer]').forEach(b => b.addEventListener('click', closeDrawer));
-  $('#overlay').addEventListener('click', () => {
-    closeDrawer();
-    closePalette();
-  });
-
-  $('#searchTrigger').addEventListener('click', openPalette);
-  $('#paletteInput').addEventListener('input', e => renderPalette(e.target.value));
-  $$('.palette-item').forEach(item => {
-    item.addEventListener('click', () => { goTo(item.dataset.view); closePalette(); });
-  });
-
-  $$('[data-close-modal]').forEach(b => b.addEventListener('click', () => {
-    $('#modalOverlay').classList.remove('show');
-  }));
-  $('#modalOverlay').addEventListener('click', e => {
-    if (e.target.id === 'modalOverlay') $('#modalOverlay').classList.remove('show');
-  });
-
-  document.addEventListener('keydown', e => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      e.preventDefault();
-      if ($('#paletteOverlay').classList.contains('show')) closePalette();
-      else openPalette();
-    }
-    if (e.key === 'Escape') {
-      closePalette();
-      closeDrawer();
-      $('#modalOverlay').classList.remove('show');
-    }
-    if (e.target.tagName === 'INPUT') return;
-    const views = ['overview', 'zones', 'analytics', 'alerts', 'devices', 'reports', 'settings'];
-    if (e.key >= '1' && e.key <= '7') {
-      goTo(views[parseInt(e.key) - 1]);
-    }
-  });
-
-  $$('#zoneFilterChips .chip').forEach(c => c.addEventListener('click', () => {
-    $$('#zoneFilterChips .chip').forEach(x => x.classList.remove('active'));
-    c.classList.add('active');
-    state.zoneFilter = c.dataset.filter;
-    renderZoneGrid();
-  }));
-
-  $$('#alertFilterChips .chip').forEach(c => c.addEventListener('click', () => {
-    $$('#alertFilterChips .chip').forEach(x => x.classList.remove('active'));
-    c.classList.add('active');
-    state.alertFilter = c.dataset.filter;
-    renderAlerts();
-  }));
-
-  $$('#timeRangeChips .chip').forEach(c => c.addEventListener('click', () => {
-    $$('#timeRangeChips .chip').forEach(x => x.classList.remove('active'));
-    c.classList.add('active');
-    toast('info', 'الفترة الزمنية', `تم التبديل إلى ${c.textContent.trim()}`);
-  }));
-
-  $$('#analyticsRange .chip').forEach(c => c.addEventListener('click', () => {
-    $$('#analyticsRange .chip').forEach(x => x.classList.remove('active'));
-    c.classList.add('active');
-    renderAnalytics();
-  }));
-
-  $$('[data-series]').forEach(c => c.addEventListener('click', () => {
-    $$('[data-series]').forEach(x => x.classList.remove('active'));
-    c.classList.add('active');
-    if (!state.charts.main) return;
-    const s = c.dataset.series;
-    state.charts.main.data.datasets[0].hidden = s === 'hum';
-    state.charts.main.data.datasets[1].hidden = s === 'temp';
-    state.charts.main.update();
-  }));
-
-  $('#refreshBtn').addEventListener('click', () => {
-    tick();
-    toast('info', 'تم التحديث', 'تم تحديث لوحة التحكم');
-  });
-
-  $('#exportBtn').addEventListener('click', exportCSV);
-
-  $('#ackAllBtn').addEventListener('click', () => {
-    state.alerts.forEach(a => a.active = false);
-    renderAlerts();
-    renderKPIs();
-    updateNavBadge();
-    toast('success', 'تم التأكيد', 'تم تأكيد جميع التنبيهات');
-  });
-
-  $('#zoneSearch').addEventListener('input', e => {
-    state.zoneSearch = e.target.value;
-    renderZoneGrid();
-  });
-
-  $('#deviceSearch').addEventListener('input', renderDevices);
-
-  const sliderBindings = [
-    ['tempMinSlider', 'tempMinVal', '°C', 'tempMin'],
-    ['tempMaxSlider', 'tempMaxVal', '°C', 'tempMax'],
-    ['humMinSlider', 'humMinVal', '%', 'humMin'],
-    ['humMaxSlider', 'humMaxVal', '%', 'humMax']
-  ];
-  sliderBindings.forEach(([sliderId, valId, unit, key]) => {
-    const slider = document.getElementById(sliderId);
-    const valEl = document.getElementById(valId);
-    if (!slider) return;
-    slider.addEventListener('input', () => {
-      valEl.textContent = slider.value + unit;
-      state.thresholds[key] = parseInt(slider.value);
-    });
-  });
-
-  $$('[data-toggle]').forEach(sw => sw.addEventListener('click', () => {
-    sw.classList.toggle('on');
-    if (sw.id === 'themeSwitch') toggleTheme();
-  }));
-
-  $('#saveSettings').addEventListener('click', () => {
-    toast('success', 'تم الحفظ', 'تم حفظ الإعدادات بنجاح');
-  });
-
-  $$('.report-card').forEach(card => card.addEventListener('click', () => {
-    toast('info', 'توليد التقرير', 'جارٍ إعداد التقرير... (نسخة عرض توضيحية)');
-  }));
-}
-
-/* ═══════════════════════════════════════════
-   INIT
-   ═══════════════════════════════════════════ */
-function init() {
-  initZones();
-  initDevices();
-  initAlerts();
-  initEvents();
-
-  renderKPIs();
-  renderRecentAlerts();
-  renderLiveFeed();
-  renderZoneGrid();
-  renderAlerts();
-  renderDevices();
-  renderAnalytics();
-  renderHeatmap();
-  updateNavBadge();
-
-  bindEvents();
-
-  setTimeout(() => ensureCharts('overview'), 100);
-
-  setInterval(tick, 2000);
-  setInterval(updateUptime, 1000);
-
-  setTimeout(() => toast('info', 'مرحباً بك', 'نظام stocksafety جاهز للعرض'), 800);
-}
-
-init();
-</script>
-</body>
-</html>
+  zones: ['المناطق', '8 مناطق
