@@ -9,1319 +9,311 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-/* ═══════════════════════════════════════════
-   DESIGN TOKENS
-   ═══════════════════════════════════════════ */
-:root {
-  --bg: #060a12;
-  --surface-1: #0a1019;
-  --surface-2: #0f1724;
-  --surface-3: #141f2f;
-  --surface-4: #1a2740;
-  --border: rgba(255,255,255,.06);
-  --border-2: rgba(255,255,255,.10);
-  --border-3: rgba(255,255,255,.16);
-  --text: #e8eef8;
-  --text-2: #8b9cb4;
-  --text-3: #5a6b82;
-  --primary: #22d3ee;
-  --primary-2: #06b6d4;
-  --primary-glow: rgba(34,211,238,.35);
-  --violet: #a78bfa;
-  --violet-2: #8b5cf6;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --info: #3b82f6;
-  --radius-sm: 8px;
-  --radius: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
-  --shadow: 0 4px 16px rgba(0,0,0,.3);
-  --shadow-lg: 0 12px 40px -8px rgba(0,0,0,.5);
-  --font: 'Cairo', -apple-system, sans-serif;
-  --mono: 'IBM Plex Mono', monospace;
-  --sidebar-w: 248px;
-  --topbar-h: 62px;
-}
-
-[data-theme="light"] {
-  --bg: #f5f7fb;
-  --surface-1: #ffffff;
-  --surface-2: #f8fafc;
-  --surface-3: #f1f5f9;
-  --surface-4: #e8edf3;
-  --border: rgba(0,0,0,.06);
-  --border-2: rgba(0,0,0,.10);
-  --border-3: rgba(0,0,0,.16);
-  --text: #0f172a;
-  --text-2: #475569;
-  --text-3: #94a3b8;
-  --primary: #0891b2;
-  --primary-2: #0e7490;
-  --primary-glow: rgba(8,145,178,.20);
-  --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
-  --shadow: 0 4px 12px rgba(0,0,0,.08);
-  --shadow-lg: 0 12px 32px -8px rgba(0,0,0,.12);
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-*::selection { background: var(--primary); color: #04121c; }
-html { scroll-behavior: smooth; }
-body {
-  font-family: var(--font);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 14px;
-  line-height: 1.6;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-  transition: background .3s, color .3s;
-}
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.025) 1px, transparent 0);
-  background-size: 28px 28px;
-  pointer-events: none;
-  z-index: 0;
-  opacity: .5;
-}
-[data-theme="light"] body::before { opacity: .8; }
-
-a { color: inherit; text-decoration: none; }
-button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
-input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
-svg { display: block; }
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--border-3); }
-
-/* ═══════════════════════════════════════════
-   APP SHELL
-   ═══════════════════════════════════════════ */
-.app {
-  display: grid;
-  grid-template-columns: var(--sidebar-w) 1fr;
-  min-height: 100vh;
-  position: relative;
-  z-index: 1;
-}
-
-/* ── SIDEBAR ── */
-.sidebar {
-  background: var(--surface-1);
-  border-left: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  position: sticky;
-  top: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  z-index: 40;
-  transition: transform .3s;
-}
-.sidebar-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 18px 20px;
-  border-bottom: 1px solid var(--border);
-  height: var(--topbar-h);
-  flex-shrink: 0;
-}
-.brand-mark {
-  width: 36px; height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  display: grid; place-items: center;
-  color: #04121c;
-  font-weight: 900;
-  font-size: 15px;
-  letter-spacing: -0.5px;
-  box-shadow: 0 0 0 1px rgba(255,255,255,.1), 0 8px 20px -6px var(--primary-glow);
-  flex-shrink: 0;
-}
-.brand-text { line-height: 1.2; }
-.brand-text b { font-size: 15px; font-weight: 800; display: block; }
-.brand-text small { font-size: 10px; color: var(--text-3); letter-spacing: 1.5px; font-weight: 600; }
-
-.sidebar-section { padding: 18px 14px 8px; }
-.sidebar-label {
-  font-size: 10.5px;
-  color: var(--text-3);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  padding: 0 8px;
-  margin-bottom: 8px;
-}
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 9px 12px;
-  border-radius: var(--radius);
-  color: var(--text-2);
-  font-weight: 600;
-  font-size: 13.5px;
-  transition: .15s;
-  cursor: pointer;
-  position: relative;
-  margin-bottom: 2px;
-  width: 100%;
-  text-align: right;
-}
-.nav-item:hover { background: var(--surface-3); color: var(--text); }
-.nav-item.active {
-  background: linear-gradient(90deg, var(--surface-3), transparent);
-  color: var(--text);
-}
-.nav-item.active::before {
-  content: '';
-  position: absolute;
-  right: 0; top: 8px; bottom: 8px;
-  width: 3px;
-  border-radius: 3px;
-  background: var(--primary);
-  box-shadow: 0 0 10px var(--primary-glow);
-}
-.nav-item svg { width: 18px; height: 18px; flex-shrink: 0; stroke-width: 1.8; }
-.nav-badge {
-  margin-right: auto;
-  background: var(--danger);
-  color: white;
-  font-size: 10px;
-  font-weight: 800;
-  padding: 1px 6px;
-  border-radius: 999px;
-  min-width: 18px;
-  text-align: center;
-  display: none;
-}
-.nav-badge.show { display: inline-block; }
-
-.sidebar-footer {
-  margin-top: auto;
-  padding: 14px;
-  border-top: 1px solid var(--border);
-}
-.system-status {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px;
-  font-size: 12px;
-}
-.system-status .row {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 6px;
-}
-.system-status .row:last-child { margin-bottom: 0; }
-.system-status .k { color: var(--text-3); }
-.system-status .v { font-weight: 700; font-family: var(--mono); font-size: 11.5px; }
-.dot-live {
-  display: inline-block;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--success);
-  margin-left: 6px;
-  box-shadow: 0 0 0 0 rgba(16,185,129,.6);
-  animation: livePulse 2s infinite;
-}
-@keyframes livePulse {
-  0% { box-shadow: 0 0 0 0 rgba(16,185,129,.6); }
-  70% { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
-  100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
-}
-
-/* ── MAIN ── */
-.main { display: flex; flex-direction: column; min-width: 0; }
-
-/* ── TOPBAR ── */
-.topbar {
-  height: var(--topbar-h);
-  border-bottom: 1px solid var(--border);
-  background: rgba(10,16,25,.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  position: sticky; top: 0;
-  z-index: 30;
-  display: flex;
-  align-items: center;
-  padding: 0 22px;
-  gap: 14px;
-  flex-shrink: 0;
-}
-[data-theme="light"] .topbar { background: rgba(255,255,255,.85); }
-
-.topbar-title { font-size: 15px; font-weight: 800; }
-.topbar-title small { display: block; font-size: 11px; color: var(--text-3); font-weight: 500; }
-.topbar-spacer { flex: 1; }
-
-.search-trigger {
-  display: flex; align-items: center; gap: 8px;
-  padding: 7px 12px;
-  border-radius: var(--radius);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  color: var(--text-3);
-  font-size: 12.5px;
-  transition: .15s;
-  min-width: 200px;
-}
-.search-trigger:hover { border-color: var(--border-2); color: var(--text-2); }
-.search-trigger svg { width: 14px; height: 14px; }
-.search-trigger kbd {
-  font-family: var(--mono);
-  font-size: 10px;
-  padding: 1px 5px;
-  border-radius: 4px;
-  background: var(--surface-4);
-  color: var(--text-3);
-  margin-right: auto;
-  border: 1px solid var(--border-2);
-}
-
-.icon-btn {
-  width: 36px; height: 36px;
-  border-radius: 9px;
-  display: grid; place-items: center;
-  color: var(--text-2);
-  transition: .15s;
-  position: relative;
-  border: 1px solid transparent;
-}
-.icon-btn:hover { background: var(--surface-2); color: var(--text); border-color: var(--border); }
-.icon-btn svg { width: 18px; height: 18px; stroke-width: 1.8; }
-.icon-btn .indicator {
-  position: absolute;
-  top: 6px; left: 6px;
-  width: 7px; height: 7px;
-  background: var(--danger);
-  border-radius: 50%;
-  border: 2px solid var(--surface-1);
-}
-
-.connection-pill {
-  display: flex; align-items: center; gap: 6px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: rgba(16,185,129,.08);
-  border: 1px solid rgba(16,185,129,.25);
-  color: var(--success);
-  font-size: 11.5px;
-  font-weight: 700;
-}
-.connection-pill svg { width: 12px; height: 12px; }
-
-.user-chip {
-  display: flex; align-items: center; gap: 9px;
-  padding: 4px 10px 4px 4px;
-  border-radius: 999px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  transition: .15s;
-  cursor: pointer;
-}
-.user-chip:hover { border-color: var(--border-2); }
-.user-avatar {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), var(--violet));
-  display: grid; place-items: center;
-  color: #04121c;
-  font-weight: 900;
-  font-size: 11px;
-  flex-shrink: 0;
-}
-.user-chip .u-name { font-size: 12.5px; font-weight: 700; }
-.user-chip .u-role { font-size: 10px; color: var(--text-3); }
-
-/* ── CONTENT ── */
-.content {
-  flex: 1;
-  padding: 24px;
-  min-width: 0;
-  overflow-x: hidden;
-}
-.view { display: none; }
-.view.active { display: block; animation: viewIn .35s cubic-bezier(.2,.8,.2,1); }
-@keyframes viewIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-
-/* ═══════════════════════════════════════════
-   COMPONENTS
-   ═══════════════════════════════════════════ */
-.page-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 22px;
-}
-.page-head h1 { font-size: 22px; font-weight: 800; letter-spacing: -.3px; margin-bottom: 3px; }
-.page-head p { color: var(--text-3); font-size: 13px; }
-.page-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 8px 14px;
-  border-radius: var(--radius);
-  font-weight: 700;
-  font-size: 12.5px;
-  transition: .15s;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  color: var(--text);
-  white-space: nowrap;
-}
-.btn:hover { background: var(--surface-3); border-color: var(--border-2); }
-.btn svg { width: 14px; height: 14px; stroke-width: 2; }
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  color: #04121c;
-  border: none;
-  box-shadow: 0 4px 14px -4px var(--primary-glow);
-}
-.btn-primary:hover { box-shadow: 0 6px 20px -4px var(--primary-glow); transform: translateY(-1px); }
-.btn-ghost { background: transparent; }
-.btn-ghost:hover { background: var(--surface-2); }
-.btn-sm { padding: 6px 10px; font-size: 11.5px; }
-.btn-danger { background: rgba(239,68,68,.1); color: var(--danger); border-color: rgba(239,68,68,.3); }
-.btn-danger:hover { background: rgba(239,68,68,.18); }
-
-.card {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-.card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 18px;
-  border-bottom: 1px solid var(--border);
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.card-head h3 { font-size: 14px; font-weight: 800; }
-.card-head .sub { color: var(--text-3); font-size: 11.5px; margin-top: 1px; }
-.card-body { padding: 18px; }
-
-/* KPI CARD */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  margin-bottom: 20px;
-}
-.kpi {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 16px;
-  position: relative;
-  overflow: hidden;
-  transition: .2s;
-}
-.kpi:hover { border-color: var(--border-2); transform: translateY(-2px); box-shadow: var(--shadow); }
-.kpi::after {
-  content: '';
-  position: absolute;
-  top: 0; right: 0; left: 0;
-  height: 2px;
-  background: var(--accent, var(--primary));
-  opacity: .8;
-}
-.kpi-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-.kpi-icon {
-  width: 34px; height: 34px;
-  border-radius: 9px;
-  display: grid; place-items: center;
-  background: var(--accent-bg, rgba(34,211,238,.1));
-  color: var(--accent, var(--primary));
-}
-.kpi-icon svg { width: 16px; height: 16px; stroke-width: 2; }
-.kpi-trend {
-  display: flex; align-items: center; gap: 3px;
-  font-size: 10.5px; font-weight: 700;
-  padding: 3px 7px;
-  border-radius: 999px;
-}
-.kpi-trend svg { width: 10px; height: 10px; }
-.trend-up { background: rgba(16,185,129,.1); color: var(--success); }
-.trend-down { background: rgba(239,68,68,.1); color: var(--danger); }
-.trend-flat { background: var(--surface-3); color: var(--text-3); }
-.kpi-value {
-  font-size: 26px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -1px;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum";
-  margin-bottom: 4px;
-}
-.kpi-value small { font-size: 12px; color: var(--text-3); font-weight: 600; margin-right: 2px; }
-.kpi-label { font-size: 11.5px; color: var(--text-3); font-weight: 600; }
-.kpi-spark { margin-top: 12px; height: 28px; }
-
-/* ZONE CARD */
-.zone-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 14px;
-}
-.zone-card {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 16px;
-  transition: .2s;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-.zone-card:hover { border-color: var(--border-2); transform: translateY(-2px); box-shadow: var(--shadow); }
-.zone-card::before {
-  content: '';
-  position: absolute;
-  top: 0; right: 0; left: 0;
-  height: 2px;
-  background: var(--zone-color, var(--success));
-}
-.zone-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; gap: 8px; }
-.zone-name { font-size: 13.5px; font-weight: 800; margin-bottom: 2px; }
-.zone-id { font-size: 10.5px; color: var(--text-3); font-family: var(--mono); }
-.status-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: 10.5px;
-  font-weight: 700;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.status-ok { background: rgba(16,185,129,.1); color: var(--success); border: 1px solid rgba(16,185,129,.2); }
-.status-warn { background: rgba(245,158,11,.1); color: var(--warning); border: 1px solid rgba(245,158,11,.2); }
-.status-crit { background: rgba(239,68,68,.1); color: var(--danger); border: 1px solid rgba(239,68,68,.2); }
-.status-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
-.status-ok .status-dot { animation: livePulse 2s infinite; }
-
-.zone-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.zm {
-  background: var(--surface-2);
-  border-radius: var(--radius);
-  padding: 9px 10px;
-  border: 1px solid var(--border);
-}
-.zm-label {
-  display: flex; align-items: center; gap: 4px;
-  font-size: 10px; color: var(--text-3); font-weight: 600; margin-bottom: 3px;
-}
-.zm-label svg { width: 10px; height: 10px; }
-.zm-value {
-  font-size: 16px; font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -.5px;
-  line-height: 1;
-}
-.zm-value small { font-size: 9px; color: var(--text-3); font-weight: 600; margin-right: 1px; }
-.zone-footer {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-top: 12px; padding-top: 10px;
-  border-top: 1px solid var(--border);
-  font-size: 10.5px; color: var(--text-3);
-}
-.zone-footer .mini { display: flex; align-items: center; gap: 4px; }
-.zone-footer svg { width: 11px; height: 11px; }
-
-/* CHART WRAPPER */
-.chart-wrapper { position: relative; height: 300px; }
-.chart-wrapper.tall { height: 340px; }
-.chart-wrapper.short { height: 220px; }
-
-/* TABLE */
-.table-scroll { overflow-x: auto; }
-table.data {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12.5px;
-}
-table.data th {
-  text-align: right;
-  padding: 10px 14px;
-  font-weight: 700;
-  font-size: 10.5px;
-  color: var(--text-3);
-  border-bottom: 1px solid var(--border);
-  text-transform: uppercase;
-  letter-spacing: .8px;
-  white-space: nowrap;
-  background: var(--surface-2);
-}
-table.data td {
-  padding: 11px 14px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-}
-table.data tbody tr:last-child td { border-bottom: none; }
-table.data tbody tr { transition: .12s; }
-table.data tbody tr:hover { background: var(--surface-2); }
-.empty-state {
-  text-align: center;
-  padding: 48px 24px;
-  color: var(--text-3);
-}
-.empty-state svg { width: 40px; height: 40px; margin: 0 auto 12px; opacity: .5; stroke-width: 1.5; }
-.empty-state h4 { font-size: 14px; color: var(--text-2); margin-bottom: 4px; }
-.empty-state p { font-size: 12px; }
-
-/* BADGES */
-.badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 6px;
-  white-space: nowrap;
-}
-.badge svg { width: 10px; height: 10px; }
-.badge-cyan { background: rgba(34,211,238,.1); color: var(--primary); }
-.badge-violet { background: rgba(167,139,250,.1); color: var(--violet); }
-.badge-success { background: rgba(16,185,129,.1); color: var(--success); }
-.badge-warning { background: rgba(245,158,11,.1); color: var(--warning); }
-.badge-danger { background: rgba(239,68,68,.1); color: var(--danger); }
-.badge-muted { background: var(--surface-3); color: var(--text-2); }
-
-/* FILTER CHIPS */
-.chips { display: flex; gap: 6px; flex-wrap: wrap; }
-.chip {
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  color: var(--text-2);
-  font-size: 12px;
-  font-weight: 600;
-  transition: .15s;
-  white-space: nowrap;
-}
-.chip:hover { border-color: var(--border-2); color: var(--text); }
-.chip.active {
-  background: rgba(34,211,238,.1);
-  border-color: rgba(34,211,238,.3);
-  color: var(--primary);
-}
-
-/* SEARCH */
-.search-input {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: var(--radius);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  transition: .15s;
-  min-width: 240px;
-}
-.search-input:focus-within {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-glow);
-}
-.search-input svg { width: 15px; height: 15px; color: var(--text-3); flex-shrink: 0; stroke-width: 2; }
-.search-input input {
-  background: none;
-  border: none;
-  outline: none;
-  color: var(--text);
-  width: 100%;
-  font-size: 12.5px;
-}
-.search-input input::placeholder { color: var(--text-3); }
-
-/* GRIDS */
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.grid-overview {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-.grid-overview-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
-}
-
-/* HEATMAP */
-.heatmap {
-  display: grid;
-  grid-template-columns: 90px repeat(24, 1fr);
-  gap: 2px;
-  font-size: 10px;
-}
-.hm-label {
-  color: var(--text-3);
-  font-size: 10px;
-  display: flex;
-  align-items: center;
-  font-weight: 600;
-  padding-left: 6px;
-}
-.hm-cell {
-  aspect-ratio: 1;
-  border-radius: 3px;
-  transition: .15s;
-  cursor: pointer;
-  min-height: 14px;
-}
-.hm-cell:hover { outline: 2px solid var(--primary); outline-offset: 1px; }
-.hm-head {
-  text-align: center;
-  color: var(--text-3);
-  font-size: 9px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-.hm-legend {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 10.5px; color: var(--text-3);
-  margin-top: 12px; justify-content: flex-end;
-}
-.hm-legend-bar {
-  display: flex; gap: 1px;
-}
-.hm-legend-bar span {
-  width: 16px; height: 8px; border-radius: 1px;
-}
-
-/* LIVE FEED */
-.feed-list { display: flex; flex-direction: column; gap: 2px; max-height: 320px; overflow-y: auto; }
-.feed-item {
-  display: flex; gap: 10px;
-  padding: 10px;
-  border-radius: var(--radius);
-  transition: .12s;
-}
-.feed-item:hover { background: var(--surface-2); }
-.feed-icon {
-  width: 28px; height: 28px;
-  border-radius: 7px;
-  display: grid; place-items: center;
-  flex-shrink: 0;
-}
-.feed-icon svg { width: 13px; height: 13px; stroke-width: 2; }
-.feed-body { flex: 1; min-width: 0; }
-.feed-title { font-size: 12px; font-weight: 600; margin-bottom: 1px; }
-.feed-meta { font-size: 10.5px; color: var(--text-3); }
-.feed-time { font-size: 10px; color: var(--text-3); font-family: var(--mono); white-space: nowrap; flex-shrink: 0; }
-
-/* INSIGHT CARD */
-.insight {
-  background: linear-gradient(135deg, rgba(34,211,238,.08), rgba(167,139,250,.06));
-  border: 1px solid rgba(34,211,238,.2);
-  border-radius: var(--radius);
-  padding: 14px;
-  display: flex;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-.insight-icon {
-  width: 30px; height: 30px;
-  border-radius: 8px;
-  background: rgba(34,211,238,.15);
-  color: var(--primary);
-  display: grid; place-items: center;
-  flex-shrink: 0;
-}
-.insight-icon svg { width: 15px; height: 15px; stroke-width: 2; }
-.insight-body h5 { font-size: 12.5px; font-weight: 800; margin-bottom: 2px; }
-.insight-body p { font-size: 11.5px; color: var(--text-2); line-height: 1.5; }
-
-/* GAUGE */
-.gauge-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 8px 0;
-}
-.gauge-chart { position: relative; width: 160px; height: 160px; }
-.gauge-center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-.gauge-value {
-  font-size: 30px;
-  font-weight: 800;
-  letter-spacing: -1px;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-.gauge-value small { font-size: 13px; color: var(--text-3); font-weight: 600; }
-.gauge-label { font-size: 10.5px; color: var(--text-3); font-weight: 600; margin-top: 2px; }
-
-/* SETTINGS */
-.setting-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--border);
-}
-.setting-row:last-child { border-bottom: none; }
-.setting-info h4 { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
-.setting-info p { font-size: 11.5px; color: var(--text-3); }
-.setting-control { flex-shrink: 0; }
-
-.switch {
-  position: relative;
-  width: 36px;
-  height: 20px;
-  background: var(--surface-4);
-  border-radius: 999px;
-  cursor: pointer;
-  transition: .2s;
-}
-.switch::after {
-  content: '';
-  position: absolute;
-  top: 2px; right: 2px;
-  width: 16px; height: 16px;
-  background: white;
-  border-radius: 50%;
-  transition: .2s;
-}
-.switch.on { background: var(--primary); }
-.switch.on::after { right: calc(100% - 18px); }
-
-.slider-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 220px;
-}
-.slider-row input[type="range"] {
-  flex: 1;
-  -webkit-appearance: none;
-  appearance: none;
-  height: 4px;
-  background: var(--surface-4);
-  border-radius: 999px;
-  outline: none;
-}
-.slider-row input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 16px; height: 16px;
-  border-radius: 50%;
-  background: var(--primary);
-  cursor: pointer;
-  box-shadow: 0 0 0 3px rgba(34,211,238,.2);
-}
-.slider-row .slider-val {
-  font-family: var(--mono);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--primary);
-  min-width: 50px;
-  text-align: center;
-  background: var(--surface-2);
-  padding: 3px 8px;
-  border-radius: 6px;
-}
-
-/* DEVICE ROW */
-.device-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
-  transition: .12s;
-}
-.device-row:last-child { border-bottom: none; }
-.device-row:hover { background: var(--surface-2); }
-.device-icon {
-  width: 32px; height: 32px;
-  border-radius: 8px;
-  background: var(--surface-3);
-  color: var(--text-2);
-  display: grid; place-items: center;
-  flex-shrink: 0;
-}
-.device-icon svg { width: 15px; height: 15px; stroke-width: 2; }
-.device-info { flex: 1; min-width: 0; }
-.device-info .name { font-size: 12.5px; font-weight: 700; }
-.device-info .id { font-size: 10.5px; color: var(--text-3); font-family: var(--mono); }
-.device-meta {
-  display: flex; gap: 16px; align-items: center;
-  font-size: 11px; color: var(--text-2);
-}
-.device-meta .item { display: flex; align-items: center; gap: 4px; }
-.device-meta svg { width: 11px; height: 11px; stroke-width: 2; }
-
-/* BATTERY */
-.battery {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 600;
-}
-.battery-bar {
-  width: 24px;
-  height: 10px;
-  border: 1px solid currentColor;
-  border-radius: 2px;
-  position: relative;
-  padding: 1px;
-}
-.battery-bar::after {
-  content: '';
-  position: absolute;
-  top: 3px; left: -3px;
-  width: 2px; height: 4px;
-  background: currentColor;
-  border-radius: 1px 0 0 1px;
-}
-.battery-fill {
-  height: 100%;
-  border-radius: 1px;
-  background: currentColor;
-}
-
-/* REPORT CARD */
-.report-card {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px;
-  transition: .2s;
-  cursor: pointer;
-}
-.report-card:hover {
-  border-color: var(--border-2);
-  background: var(--surface-3);
-  transform: translateY(-2px);
-}
-.report-icon {
-  width: 40px; height: 40px;
-  border-radius: 10px;
-  display: grid; place-items: center;
-  margin-bottom: 14px;
-}
-.report-icon svg { width: 18px; height: 18px; stroke-width: 2; }
-.report-card h4 { font-size: 13.5px; font-weight: 800; margin-bottom: 4px; }
-.report-card p { font-size: 11.5px; color: var(--text-3); line-height: 1.5; margin-bottom: 14px; }
-
-/* PROFILE FORM */
-.field { margin-bottom: 14px; }
-.field:last-of-type { margin-bottom: 0; }
-.field label {
-  display: block;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--text-2);
-  margin-bottom: 6px;
-}
-.field label .req { color: var(--danger); }
-.field input, .field textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: var(--radius);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  outline: none;
-  transition: .15s;
-  font-size: 13px;
-}
-.field input::placeholder { color: var(--text-3); }
-.field input:focus, .field textarea:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-glow);
-}
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.profile-form-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  margin-top: 22px;
-}
-.avatar-lg {
-  width: 64px; height: 64px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, var(--primary), var(--violet));
-  display: grid; place-items: center;
-  color: #04121c;
-  font-weight: 900;
-  font-size: 22px;
-  flex-shrink: 0;
-  box-shadow: 0 8px 24px -8px var(--primary-glow);
-}
-.profile-head {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 22px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--border);
-}
-
-/* ═══════════════════════════════════════════
-   OVERLAYS
-   ═══════════════════════════════════════════ */
-.overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.6);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  z-index: 100;
-  display: none;
-  opacity: 0;
-  transition: opacity .2s;
-}
-.overlay.show { display: block; opacity: 1; }
-.overlay.show > * { animation: modalIn .3s cubic-bezier(.2,.8,.2,1); }
-@keyframes modalIn {
-  from { opacity: 0; transform: translateY(20px) scale(.96); }
-  to { opacity: 1; transform: none; }
-}
-
-/* MODAL */
-.modal {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--surface-1);
-  border: 1px solid var(--border-2);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  width: min(720px, 92vw);
-  max-height: 88vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-.modal-head {
-  padding: 18px 22px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-.modal-head h3 { font-size: 15px; font-weight: 800; }
-.modal-head p { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
-.modal-body { padding: 22px; overflow-y: auto; }
-.modal-close {
-  width: 30px; height: 30px;
-  border-radius: 8px;
-  display: grid; place-items: center;
-  color: var(--text-3);
-  transition: .15s;
-}
-.modal-close:hover { background: var(--surface-3); color: var(--text); }
-.modal-close svg { width: 16px; height: 16px; stroke-width: 2; }
-
-/* DRAWER */
-.drawer {
-  position: fixed;
-  top: 0; left: 0;
-  width: min(400px, 92vw);
-  height: 100vh;
-  background: var(--surface-1);
-  border-right: 1px solid var(--border-2);
-  box-shadow: var(--shadow-lg);
-  z-index: 101;
-  transform: translateX(-100%);
-  transition: transform .3s cubic-bezier(.2,.8,.2,1);
-  display: flex;
-  flex-direction: column;
-}
-.drawer.show { transform: translateX(0); }
-.drawer-head {
-  padding: 18px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-shrink: 0;
-}
-.drawer-head h3 { font-size: 15px; font-weight: 800; }
-.drawer-body { flex: 1; overflow-y: auto; padding: 12px; }
-
-/* COMMAND PALETTE */
-.palette {
-  position: absolute;
-  top: 20vh; left: 50%;
-  transform: translateX(-50%);
-  width: min(560px, 92vw);
-  background: var(--surface-1);
-  border: 1px solid var(--border-2);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
-}
-.palette-input {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-}
-.palette-input svg { width: 18px; height: 18px; color: var(--text-3); stroke-width: 2; }
-.palette-input input {
-  flex: 1;
-  background: none;
-  border: none;
-  outline: none;
-  color: var(--text);
-  font-size: 14px;
-}
-.palette-input input::placeholder { color: var(--text-3); }
-.palette-list { max-height: 380px; overflow-y: auto; padding: 8px; }
-.palette-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: .12s;
-}
-.palette-item:hover, .palette-item.active { background: var(--surface-3); }
-.palette-item .icon {
-  width: 28px; height: 28px;
-  border-radius: 7px;
-  background: var(--surface-2);
-  color: var(--text-2);
-  display: grid; place-items: center;
-  flex-shrink: 0;
-}
-.palette-item .icon svg { width: 13px; height: 13px; stroke-width: 2; }
-.palette-item .label { flex: 1; font-size: 12.5px; font-weight: 600; }
-.palette-item .hint { font-size: 10.5px; color: var(--text-3); }
-.palette-empty { text-align: center; padding: 40px 20px; color: var(--text-3); font-size: 12.5px; }
-
-/* TOASTS */
-.toasts {
-  position: fixed;
-  bottom: 20px; left: 20px;
-  z-index: 200;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  pointer-events: none;
-}
-.toast {
-  background: var(--surface-2);
-  border: 1px solid var(--border-2);
-  border-right: 3px solid var(--primary);
-  border-radius: var(--radius);
-  padding: 12px 16px;
-  min-width: 280px;
-  max-width: 380px;
-  box-shadow: var(--shadow-lg);
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  pointer-events: auto;
-  animation: toastIn .3s cubic-bezier(.2,.8,.2,1);
-}
-@keyframes toastIn {
-  from { transform: translateX(-110%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-.toast.warn { border-right-color: var(--warning); }
-.toast.crit { border-right-color: var(--danger); }
-.toast.success { border-right-color: var(--success); }
-.toast-icon {
-  width: 26px; height: 26px;
-  border-radius: 7px;
-  display: grid; place-items: center;
-  flex-shrink: 0;
-  background: rgba(34,211,238,.1);
-  color: var(--primary);
-}
-.toast.warn .toast-icon { background: rgba(245,158,11,.1); color: var(--warning); }
-.toast.crit .toast-icon { background: rgba(239,68,68,.1); color: var(--danger); }
-.toast.success .toast-icon { background: rgba(16,185,129,.1); color: var(--success); }
-.toast-icon svg { width: 13px; height: 13px; stroke-width: 2; }
-.toast-body { flex: 1; }
-.toast-title { font-size: 12.5px; font-weight: 700; margin-bottom: 1px; }
-.toast-msg { font-size: 11px; color: var(--text-2); line-height: 1.4; }
-
-/* UTIL */
-.mono { font-family: var(--mono); }
-.text-muted { color: var(--text-3); }
-.text-small { font-size: 11.5px; }
-.mb-0 { margin-bottom: 0 !important; }
-.mb-2 { margin-bottom: 8px; }
-.mb-3 { margin-bottom: 14px; }
-.mb-4 { margin-bottom: 20px; }
-.mt-3 { margin-top: 14px; }
-.hidden { display: none !important; }
-.flex { display: flex; }
-.flex-center { display: flex; align-items: center; }
-.gap-2 { gap: 8px; }
-.gap-3 { gap: 14px; }
-
-/* RESPONSIVE */
-@media (max-width: 1200px) {
-  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-  .grid-overview { grid-template-columns: 1fr; }
-  .grid-overview-2 { grid-template-columns: 1fr 1fr; }
-  .grid-3 { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 900px) {
-  .app { grid-template-columns: 1fr; }
-  .sidebar {
-    position: fixed;
-    top: 0; right: 0;
-    width: var(--sidebar-w);
-    transform: translateX(100%);
-  }
-  .sidebar.open { transform: none; }
-  .search-trigger { min-width: 0; }
-  .search-trigger span { display: none; }
-  .search-trigger kbd { display: none; }
-  .grid-overview-2 { grid-template-columns: 1fr; }
-  .grid-3 { grid-template-columns: 1fr; }
-  .grid-2 { grid-template-columns: 1fr; }
-}
-@media (max-width: 600px) {
-  .content { padding: 16px; }
-  .kpi-grid { grid-template-columns: 1fr; }
-  .heatmap { grid-template-columns: 60px repeat(24, 1fr); font-size: 8px; }
-  .hm-cell { min-height: 10px; }
-  .field-row { grid-template-columns: 1fr; }
-  .user-chip .u-name, .user-chip .u-role { display: none; }
-  .user-chip { padding: 4px; }
-}
+:root{--bg:#060a12;--surface-1:#0a1019;--surface-2:#0f1724;--surface-3:#141f2f;--surface-4:#1a2740;--border:rgba(255,255,255,.06);--border-2:rgba(255,255,255,.10);--border-3:rgba(255,255,255,.16);--text:#e8eef8;--text-2:#8b9cb4;--text-3:#5a6b82;--primary:#22d3ee;--primary-2:#06b6d4;--primary-glow:rgba(34,211,238,.35);--violet:#a78bfa;--violet-2:#8b5cf6;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;--info:#3b82f6;--radius-sm:8px;--radius:12px;--radius-lg:16px;--radius-xl:20px;--shadow-sm:0 1px 2px rgba(0,0,0,.4);--shadow:0 4px 16px rgba(0,0,0,.3);--shadow-lg:0 12px 40px -8px rgba(0,0,0,.5);--font:'Cairo',-apple-system,sans-serif;--mono:'IBM Plex Mono',monospace;--sidebar-w:248px;--topbar-h:62px}
+[data-theme="light"]{--bg:#f5f7fb;--surface-1:#ffffff;--surface-2:#f8fafc;--surface-3:#f1f5f9;--surface-4:#e8edf3;--border:rgba(0,0,0,.06);--border-2:rgba(0,0,0,.10);--border-3:rgba(0,0,0,.16);--text:#0f172a;--text-2:#475569;--text-3:#94a3b8;--primary:#0891b2;--primary-2:#0e7490;--primary-glow:rgba(8,145,178,.20);--shadow-sm:0 1px 2px rgba(0,0,0,.06);--shadow:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 12px 32px -8px rgba(0,0,0,.12)}
+*{margin:0;padding:0;box-sizing:border-box}*::selection{background:var(--primary);color:#04121c}html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.025) 1px,transparent 0);background-size:28px 28px;pointer-events:none;z-index:0;opacity:.5}
+[data-theme="light"] body::before{opacity:.8}
+a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}svg{display:block}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:var(--border-3)}
+.app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh;position:relative;z-index:1}
+.sidebar{background:var(--surface-1);border-left:1px solid var(--border);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;overflow-y:auto;overflow-x:hidden;z-index:40;transition:transform .3s}
+.sidebar-brand{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--border);height:var(--topbar-h);flex-shrink:0}
+.brand-mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--primary-2));display:grid;place-items:center;color:#04121c;font-weight:900;font-size:15px;letter-spacing:-.5px;box-shadow:0 0 0 1px rgba(255,255,255,.1),0 8px 20px -6px var(--primary-glow);flex-shrink:0}
+.brand-text{line-height:1.2}.brand-text b{font-size:15px;font-weight:800;display:block}.brand-text small{font-size:10px;color:var(--text-3);letter-spacing:1.5px;font-weight:600}
+.sidebar-section{padding:18px 14px 8px}.sidebar-label{font-size:10.5px;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:0 8px;margin-bottom:8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:var(--radius);color:var(--text-2);font-weight:600;font-size:13.5px;transition:.15s;cursor:pointer;position:relative;margin-bottom:2px;width:100%;text-align:right}
+.nav-item:hover{background:var(--surface-3);color:var(--text)}
+.nav-item.active{background:linear-gradient(90deg,var(--surface-3),transparent);color:var(--text)}
+.nav-item.active::before{content:'';position:absolute;right:0;top:8px;bottom:8px;width:3px;border-radius:3px;background:var(--primary);box-shadow:0 0 10px var(--primary-glow)}
+.nav-item svg{width:18px;height:18px;flex-shrink:0;stroke-width:1.8}
+.nav-badge{margin-right:auto;background:var(--danger);color:white;font-size:10px;font-weight:800;padding:1px 6px;border-radius:999px;min-width:18px;text-align:center;display:none}
+.nav-badge.show{display:inline-block}
+.sidebar-footer{margin-top:auto;padding:14px;border-top:1px solid var(--border)}
+.system-status{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-size:12px}
+.system-status .row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.system-status .row:last-child{margin-bottom:0}
+.system-status .k{color:var(--text-3)}.system-status .v{font-weight:700;font-family:var(--mono);font-size:11.5px}
+.dot-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--success);margin-left:6px;box-shadow:0 0 0 0 rgba(16,185,129,.6);animation:livePulse 2s infinite}
+@keyframes livePulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.6)}70%{box-shadow:0 0 0 8px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+.main{display:flex;flex-direction:column;min-width:0}
+.topbar{height:var(--topbar-h);border-bottom:1px solid var(--border);background:rgba(10,16,25,.75);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);position:sticky;top:0;z-index:30;display:flex;align-items:center;padding:0 22px;gap:14px;flex-shrink:0}
+[data-theme="light"] .topbar{background:rgba(255,255,255,.85)}
+.topbar-title{font-size:15px;font-weight:800}.topbar-title small{display:block;font-size:11px;color:var(--text-3);font-weight:500}
+.topbar-spacer{flex:1}
+.search-trigger{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:var(--radius);background:var(--surface-2);border:1px solid var(--border);color:var(--text-3);font-size:12.5px;transition:.15s;min-width:200px}
+.search-trigger:hover{border-color:var(--border-2);color:var(--text-2)}
+.search-trigger svg{width:14px;height:14px}
+.search-trigger kbd{font-family:var(--mono);font-size:10px;padding:1px 5px;border-radius:4px;background:var(--surface-4);color:var(--text-3);margin-right:auto;border:1px solid var(--border-2)}
+.icon-btn{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;color:var(--text-2);transition:.15s;position:relative;border:1px solid transparent}
+.icon-btn:hover{background:var(--surface-2);color:var(--text);border-color:var(--border)}
+.icon-btn svg{width:18px;height:18px;stroke-width:1.8}
+.icon-btn .indicator{position:absolute;top:6px;left:6px;width:7px;height:7px;background:var(--danger);border-radius:50%;border:2px solid var(--surface-1)}
+.connection-pill{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);color:var(--success);font-size:11.5px;font-weight:700}
+.connection-pill svg{width:12px;height:12px}
+.user-chip{display:flex;align-items:center;gap:9px;padding:4px 10px 4px 4px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);transition:.15s;cursor:pointer}
+.user-chip:hover{border-color:var(--border-2)}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--violet));display:grid;place-items:center;color:#04121c;font-weight:900;font-size:11px;flex-shrink:0}
+.user-chip .u-name{font-size:12.5px;font-weight:700;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-chip .u-role{font-size:10px;color:var(--text-3);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.content{flex:1;padding:24px;min-width:0;overflow-x:hidden}
+.view{display:none}.view.active{display:block;animation:viewIn .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.page-head h1{font-size:22px;font-weight:800;letter-spacing:-.3px;margin-bottom:3px}
+.page-head p{color:var(--text-3);font-size:13px}
+.page-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 14px;border-radius:var(--radius);font-weight:700;font-size:12.5px;transition:.15s;border:1px solid var(--border);background:var(--surface-2);color:var(--text);white-space:nowrap}
+.btn:hover{background:var(--surface-3);border-color:var(--border-2)}
+.btn svg{width:14px;height:14px;stroke-width:2}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#04121c;border:none;box-shadow:0 4px 14px -4px var(--primary-glow)}
+.btn-primary:hover{box-shadow:0 6px 20px -4px var(--primary-glow);transform:translateY(-1px)}
+.btn-ghost{background:transparent}.btn-ghost:hover{background:var(--surface-2)}
+.btn-sm{padding:6px 10px;font-size:11.5px}
+.btn-danger{background:rgba(239,68,68,.1);color:var(--danger);border-color:rgba(239,68,68,.3)}.btn-danger:hover{background:rgba(239,68,68,.18)}
+.card{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.card-head{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
+.card-head h3{font-size:14px;font-weight:800}.card-head .sub{color:var(--text-3);font-size:11.5px;margin-top:1px}
+.card-body{padding:18px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.kpi{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;position:relative;overflow:hidden;transition:.2s}
+.kpi:hover{border-color:var(--border-2);transform:translateY(-2px);box-shadow:var(--shadow)}
+.kpi::after{content:'';position:absolute;top:0;right:0;left:0;height:2px;background:var(--accent,var(--primary));opacity:.8}
+.kpi-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.kpi-icon{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--accent-bg,rgba(34,211,238,.1));color:var(--accent,var(--primary))}
+.kpi-icon svg{width:16px;height:16px;stroke-width:2}
+.kpi-trend{display:flex;align-items:center;gap:3px;font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:999px}
+.kpi-trend svg{width:10px;height:10px}
+.trend-up{background:rgba(16,185,129,.1);color:var(--success)}
+.trend-down{background:rgba(239,68,68,.1);color:var(--danger)}
+.trend-flat{background:var(--surface-3);color:var(--text-3)}
+.kpi-value{font-size:26px;font-weight:800;line-height:1;letter-spacing:-1px;font-variant-numeric:tabular-nums;font-feature-settings:"tnum";margin-bottom:4px}
+.kpi-value small{font-size:12px;color:var(--text-3);font-weight:600;margin-right:2px}
+.kpi-label{font-size:11.5px;color:var(--text-3);font-weight:600}
+.kpi-spark{margin-top:12px;height:28px}
+.zone-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.zone-card{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;transition:.2s;cursor:pointer;position:relative;overflow:hidden}
+.zone-card:hover{border-color:var(--border-2);transform:translateY(-2px);box-shadow:var(--shadow)}
+.zone-card::before{content:'';position:absolute;top:0;right:0;left:0;height:2px;background:var(--zone-color,var(--success))}
+.zone-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:8px}
+.zone-name{font-size:13.5px;font-weight:800;margin-bottom:2px}
+.zone-id{font-size:10.5px;color:var(--text-3);font-family:var(--mono)}
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;font-size:10.5px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.status-ok{background:rgba(16,185,129,.1);color:var(--success);border:1px solid rgba(16,185,129,.2)}
+.status-warn{background:rgba(245,158,11,.1);color:var(--warning);border:1px solid rgba(245,158,11,.2)}
+.status-crit{background:rgba(239,68,68,.1);color:var(--danger);border:1px solid rgba(239,68,68,.2)}
+.status-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.status-ok .status-dot{animation:livePulse 2s infinite}
+.zone-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.zm{background:var(--surface-2);border-radius:var(--radius);padding:9px 10px;border:1px solid var(--border)}
+.zm-label{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-3);font-weight:600;margin-bottom:3px}
+.zm-label svg{width:10px;height:10px}
+.zm-value{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.5px;line-height:1}
+.zm-value small{font-size:9px;color:var(--text-3);font-weight:600;margin-right:1px}
+.zone-footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:10.5px;color:var(--text-3)}
+.zone-footer .mini{display:flex;align-items:center;gap:4px}
+.zone-footer svg{width:11px;height:11px}
+.chart-wrapper{position:relative;height:300px}
+.chart-wrapper.tall{height:340px}.chart-wrapper.short{height:220px}
+.table-scroll{overflow-x:auto}
+table.data{width:100%;border-collapse:collapse;font-size:12.5px}
+table.data th{text-align:right;padding:10px 14px;font-weight:700;font-size:10.5px;color:var(--text-3);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;background:var(--surface-2)}
+table.data td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+table.data tbody tr:last-child td{border-bottom:none}
+table.data tbody tr{transition:.12s}
+table.data tbody tr:hover{background:var(--surface-2)}
+.empty-state{text-align:center;padding:48px 24px;color:var(--text-3)}
+.empty-state svg{width:40px;height:40px;margin:0 auto 12px;opacity:.5;stroke-width:1.5}
+.empty-state h4{font-size:14px;color:var(--text-2);margin-bottom:4px}
+.empty-state p{font-size:12px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.badge svg{width:10px;height:10px}
+.badge-cyan{background:rgba(34,211,238,.1);color:var(--primary)}
+.badge-violet{background:rgba(167,139,250,.1);color:var(--violet)}
+.badge-success{background:rgba(16,185,129,.1);color:var(--success)}
+.badge-warning{background:rgba(245,158,11,.1);color:var(--warning)}
+.badge-danger{background:rgba(239,68,68,.1);color:var(--danger)}
+.badge-muted{background:var(--surface-3);color:var(--text-2)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:6px 12px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);font-size:12px;font-weight:600;transition:.15s;white-space:nowrap}
+.chip:hover{border-color:var(--border-2);color:var(--text)}
+.chip.active{background:rgba(34,211,238,.1);border-color:rgba(34,211,238,.3);color:var(--primary)}
+.search-input{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);background:var(--surface-2);border:1px solid var(--border);transition:.15s;min-width:240px}
+.search-input:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-glow)}
+.search-input svg{width:15px;height:15px;color:var(--text-3);flex-shrink:0;stroke-width:2}
+.search-input input{background:none;border:none;outline:none;color:var(--text);width:100%;font-size:12.5px}
+.search-input input::placeholder{color:var(--text-3)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-overview{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px}
+.grid-overview-2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.heatmap{display:grid;grid-template-columns:90px repeat(24,1fr);gap:2px;font-size:10px}
+.hm-label{color:var(--text-3);font-size:10px;display:flex;align-items:center;font-weight:600;padding-left:6px}
+.hm-cell{aspect-ratio:1;border-radius:3px;transition:.15s;cursor:pointer;min-height:14px}
+.hm-cell:hover{outline:2px solid var(--primary);outline-offset:1px}
+.hm-head{text-align:center;color:var(--text-3);font-size:9px;font-weight:600;font-variant-numeric:tabular-nums}
+.hm-legend{display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--text-3);margin-top:12px;justify-content:flex-end}
+.hm-legend-bar{display:flex;gap:1px}
+.hm-legend-bar span{width:16px;height:8px;border-radius:1px}
+.feed-list{display:flex;flex-direction:column;gap:2px;max-height:320px;overflow-y:auto}
+.feed-item{display:flex;gap:10px;padding:10px;border-radius:var(--radius);transition:.12s}
+.feed-item:hover{background:var(--surface-2)}
+.feed-icon{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;flex-shrink:0}
+.feed-icon svg{width:13px;height:13px;stroke-width:2}
+.feed-body{flex:1;min-width:0}
+.feed-title{font-size:12px;font-weight:600;margin-bottom:1px}
+.feed-meta{font-size:10.5px;color:var(--text-3)}
+.feed-time{font-size:10px;color:var(--text-3);font-family:var(--mono);white-space:nowrap;flex-shrink:0}
+.insight{background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(167,139,250,.06));border:1px solid rgba(34,211,238,.2);border-radius:var(--radius);padding:14px;display:flex;gap:12px;margin-bottom:10px}
+.insight-icon{width:30px;height:30px;border-radius:8px;background:rgba(34,211,238,.15);color:var(--primary);display:grid;place-items:center;flex-shrink:0}
+.insight-icon svg{width:15px;height:15px;stroke-width:2}
+.insight-body h5{font-size:12.5px;font-weight:800;margin-bottom:2px}
+.insight-body p{font-size:11.5px;color:var(--text-2);line-height:1.5}
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;padding:8px 0}
+.gauge-chart{position:relative;width:160px;height:160px}
+.gauge-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.gauge-value{font-size:30px;font-weight:800;letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums}
+.gauge-value small{font-size:13px;color:var(--text-3);font-weight:600}
+.gauge-label{font-size:10.5px;color:var(--text-3);font-weight:600;margin-top:2px}
+.setting-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.setting-row:last-child{border-bottom:none}
+.setting-info h4{font-size:13px;font-weight:700;margin-bottom:2px}
+.setting-info p{font-size:11.5px;color:var(--text-3)}
+.setting-control{flex-shrink:0}
+.switch{position:relative;width:36px;height:20px;background:var(--surface-4);border-radius:999px;cursor:pointer;transition:.2s}
+.switch::after{content:'';position:absolute;top:2px;right:2px;width:16px;height:16px;background:white;border-radius:50%;transition:.2s}
+.switch.on{background:var(--primary)}.switch.on::after{right:calc(100% - 18px)}
+.slider-row{display:flex;align-items:center;gap:12px;min-width:220px}
+.slider-row input[type="range"]{flex:1;-webkit-appearance:none;appearance:none;height:4px;background:var(--surface-4);border-radius:999px;outline:none}
+.slider-row input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:var(--primary);cursor:pointer;box-shadow:0 0 0 3px rgba(34,211,238,.2)}
+.slider-row .slider-val{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--primary);min-width:50px;text-align:center;background:var(--surface-2);padding:3px 8px;border-radius:6px}
+.device-row{display:flex;align-items:center;gap:14px;padding:12px 14px;border-bottom:1px solid var(--border);transition:.12s}
+.device-row:last-child{border-bottom:none}
+.device-row:hover{background:var(--surface-2)}
+.device-icon{width:32px;height:32px;border-radius:8px;background:var(--surface-3);color:var(--text-2);display:grid;place-items:center;flex-shrink:0}
+.device-icon svg{width:15px;height:15px;stroke-width:2}
+.device-info{flex:1;min-width:0}
+.device-info .name{font-size:12.5px;font-weight:700}
+.device-info .id{font-size:10.5px;color:var(--text-3);font-family:var(--mono)}
+.device-meta{display:flex;gap:16px;align-items:center;font-size:11px;color:var(--text-2)}
+.device-meta .item{display:flex;align-items:center;gap:4px}
+.device-meta svg{width:11px;height:11px;stroke-width:2}
+.report-card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;transition:.2s;cursor:pointer}
+.report-card:hover{border-color:var(--border-2);background:var(--surface-3);transform:translateY(-2px)}
+.report-icon{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;margin-bottom:14px}
+.report-icon svg{width:18px;height:18px;stroke-width:2}
+.report-card h4{font-size:13.5px;font-weight:800;margin-bottom:4px}
+.report-card p{font-size:11.5px;color:var(--text-3);line-height:1.5;margin-bottom:14px}
+.field{margin-bottom:14px}.field:last-of-type{margin-bottom:0}
+.field label{display:block;font-size:11.5px;font-weight:700;color:var(--text-2);margin-bottom:6px}
+.field label .req{color:var(--danger)}
+.field input{width:100%;padding:10px 12px;border-radius:var(--radius);background:var(--surface-2);border:1px solid var(--border);color:var(--text);outline:none;transition:.15s;font-size:13px}
+.field input::placeholder{color:var(--text-3)}
+.field input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-glow)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.profile-form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:22px}
+.avatar-lg{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--violet));display:grid;place-items:center;color:#04121c;font-weight:900;font-size:22px;flex-shrink:0;box-shadow:0 8px 24px -8px var(--primary-glow)}
+.profile-head{display:flex;align-items:center;gap:14px;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:100;display:none;opacity:0;transition:opacity .2s}
+.overlay.show{display:block;opacity:1}
+.overlay.show>*{animation:modalIn .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:none}}
+.modal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface-1);border:1px solid var(--border-2);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);width:min(720px,92vw);max-height:88vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.modal-head h3{font-size:15px;font-weight:800}.modal-head p{font-size:11.5px;color:var(--text-3);margin-top:2px}
+.modal-body{padding:22px;overflow-y:auto}
+.modal-close{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--text-3);transition:.15s}
+.modal-close:hover{background:var(--surface-3);color:var(--text)}
+.modal-close svg{width:16px;height:16px;stroke-width:2}
+.drawer{position:fixed;top:0;left:0;width:min(400px,92vw);height:100vh;background:var(--surface-1);border-right:1px solid var(--border-2);box-shadow:var(--shadow-lg);z-index:101;transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
+.drawer.show{transform:translateX(0)}
+.drawer-head{padding:18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.drawer-head h3{font-size:15px;font-weight:800}
+.drawer-body{flex:1;overflow-y:auto;padding:12px}
+.palette{position:absolute;top:20vh;left:50%;transform:translateX(-50%);width:min(560px,92vw);background:var(--surface-1);border:1px solid var(--border-2);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);overflow:hidden}
+.palette-input{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border)}
+.palette-input svg{width:18px;height:18px;color:var(--text-3);stroke-width:2}
+.palette-input input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:14px}
+.palette-input input::placeholder{color:var(--text-3)}
+.palette-list{max-height:380px;overflow-y:auto;padding:8px}
+.palette-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius);cursor:pointer;transition:.12s}
+.palette-item:hover,.palette-item.active{background:var(--surface-3)}
+.palette-item .icon{width:28px;height:28px;border-radius:7px;background:var(--surface-2);color:var(--text-2);display:grid;place-items:center;flex-shrink:0}
+.palette-item .icon svg{width:13px;height:13px;stroke-width:2}
+.palette-item .label{flex:1;font-size:12.5px;font-weight:600}
+.palette-item .hint{font-size:10.5px;color:var(--text-3)}
+.palette-empty{text-align:center;padding:40px 20px;color:var(--text-3);font-size:12.5px}
+.toasts{position:fixed;bottom:20px;left:20px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--surface-2);border:1px solid var(--border-2);border-right:3px solid var(--primary);border-radius:var(--radius);padding:12px 16px;min-width:280px;max-width:380px;box-shadow:var(--shadow-lg);display:flex;gap:10px;align-items:flex-start;pointer-events:auto;animation:toastIn .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes toastIn{from{transform:translateX(-110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast.warn{border-right-color:var(--warning)}
+.toast.crit{border-right-color:var(--danger)}
+.toast.success{border-right-color:var(--success)}
+.toast-icon{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;flex-shrink:0;background:rgba(34,211,238,.1);color:var(--primary)}
+.toast.warn .toast-icon{background:rgba(245,158,11,.1);color:var(--warning)}
+.toast.crit .toast-icon{background:rgba(239,68,68,.1);color:var(--danger)}
+.toast.success .toast-icon{background:rgba(16,185,129,.1);color:var(--success)}
+.toast-icon svg{width:13px;height:13px;stroke-width:2}
+.toast-body{flex:1}
+.toast-title{font-size:12.5px;font-weight:700;margin-bottom:1px}
+.toast-msg{font-size:11px;color:var(--text-2);line-height:1.4}
+.mono{font-family:var(--mono)}
+.text-muted{color:var(--text-3)}
+.text-small{font-size:11.5px}
+.mb-0{margin-bottom:0!important}
+.mb-2{margin-bottom:8px}
+.mb-3{margin-bottom:14px}
+.mb-4{margin-bottom:20px}
+.mt-3{margin-top:14px}
+.hidden{display:none!important}
+.flex{display:flex}
+.flex-center{display:flex;align-items:center}
+.gap-2{gap:8px}.gap-3{gap:14px}
+@media (max-width:1200px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.grid-overview{grid-template-columns:1fr}.grid-overview-2{grid-template-columns:1fr 1fr}.grid-3{grid-template-columns:1fr 1fr}}
+@media (max-width:900px){.app{grid-template-columns:1fr}.sidebar{position:fixed;top:0;right:0;width:var(--sidebar-w);transform:translateX(100%)}.sidebar.open{transform:none}.search-trigger{min-width:0}.search-trigger span{display:none}.search-trigger kbd{display:none}.grid-overview-2{grid-template-columns:1fr}.grid-3{grid-template-columns:1fr}.grid-2{grid-template-columns:1fr}}
+@media (max-width:600px){.content{padding:16px}.kpi-grid{grid-template-columns:1fr}.heatmap{grid-template-columns:60px repeat(24,1fr);font-size:8px}.hm-cell{min-height:10px}.field-row{grid-template-columns:1fr}.user-chip .u-name,.user-chip .u-role{display:none}.user-chip{padding:4px}}
 </style>
 </head>
 <body>
 
 <div class="app">
-
-  <!-- ═══════════ SIDEBAR ═══════════ -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
       <div class="brand-mark">ss</div>
-      <div class="brand-text">
-        <b>stocksafety</b>
-        <small>WAREHOUSE MONITOR</small>
-      </div>
+      <div class="brand-text"><b>stocksafety</b><small>WAREHOUSE MONITOR</small></div>
     </div>
-
     <div class="sidebar-section">
       <div class="sidebar-label">الرئيسية</div>
-      <button class="nav-item active" data-view="overview">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-        <span>نظرة عامة</span>
-      </button>
-      <button class="nav-item" data-view="zones">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
-        <span>المناطق</span>
-      </button>
-      <button class="nav-item" data-view="analytics">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
-        <span>التحليلات</span>
-      </button>
-      <button class="nav-item" data-view="alerts">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
-        <span>التنبيهات</span>
-        <span class="nav-badge" id="navAlertBadge">0</span>
-      </button>
+      <button class="nav-item active" data-view="overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>نظرة عامة</span></button>
+      <button class="nav-item" data-view="zones"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg><span>المناطق</span></button>
+      <button class="nav-item" data-view="analytics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg><span>التحليلات</span></button>
+      <button class="nav-item" data-view="alerts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span>التنبيهات</span><span class="nav-badge" id="navAlertBadge">0</span></button>
     </div>
-
     <div class="sidebar-section">
       <div class="sidebar-label">الإدارة</div>
-      <button class="nav-item" data-view="devices">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg>
-        <span>الأجهزة</span>
-      </button>
-      <button class="nav-item" data-view="reports">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
-        <span>التقارير</span>
-      </button>
-      <button class="nav-item" data-view="settings">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-        <span>الإعدادات</span>
-      </button>
+      <button class="nav-item" data-view="devices"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg><span>الأجهزة</span></button>
+      <button class="nav-item" data-view="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg><span>التقارير</span></button>
+      <button class="nav-item" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>الإعدادات</span></button>
     </div>
-
     <div class="sidebar-footer">
       <div class="system-status">
-        <div class="row">
-          <span class="k">حالة النظام</span>
-          <span class="v" style="color:var(--success)"><span class="dot-live"></span> متصل</span>
-        </div>
-        <div class="row">
-          <span class="k">الوقت التشغيلي</span>
-          <span class="v" id="uptime">00:00:00</span>
-        </div>
-        <div class="row">
-          <span class="k">الأجهزة النشطة</span>
-          <span class="v" id="activeDevices">24/24</span>
-        </div>
+        <div class="row"><span class="k">حالة النظام</span><span class="v" style="color:var(--success)"><span class="dot-live"></span> متصل</span></div>
+        <div class="row"><span class="k">الوقت التشغيلي</span><span class="v" id="uptime">00:00:00</span></div>
+        <div class="row"><span class="k">الأجهزة النشطة</span><span class="v" id="activeDevices">24/24</span></div>
       </div>
     </div>
   </aside>
 
-  <!-- ═══════════ MAIN ═══════════ -->
   <div class="main">
-
-    <!-- TOPBAR -->
     <header class="topbar">
-      <button class="icon-btn" id="sidebarToggle" aria-label="القائمة">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-      </button>
-      <div class="topbar-title" id="topbarTitle">
-        نظرة عامة
-        <small>مراقبة لحظية لجميع المناطق</small>
-      </div>
-
+      <button class="icon-btn" id="sidebarToggle" aria-label="القائمة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="topbar-title" id="topbarTitle">نظرة عامة<small>مراقبة لحظية لجميع المناطق</small></div>
       <div class="topbar-spacer"></div>
-
-      <div class="connection-pill">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12.55a11 11 0 0114 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>
-        متصل مباشر
-      </div>
-
-      <button class="search-trigger" id="searchTrigger">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        <span>ابحث أو انتقل...</span>
-        <kbd>⌘K</kbd>
-      </button>
-
-      <button class="icon-btn" id="themeToggle" title="الوضع الفاتح/الداكن">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-      </button>
-
-      <button class="icon-btn" id="notifBtn" title="الإشعارات">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
-        <span class="indicator" id="notifDot" style="display:none"></span>
-      </button>
-
+      <div class="connection-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12.55a11 11 0 0114 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>متصل مباشر</div>
+      <button class="search-trigger" id="searchTrigger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><span>ابحث أو انتقل...</span><kbd>⌘K</kbd></button>
+      <button class="icon-btn" id="themeToggle" title="الوضع الفاتح/الداكن"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
+      <button class="icon-btn" id="notifBtn" title="الإشعارات"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span class="indicator" id="notifDot" style="display:none"></span></button>
       <div class="user-chip" id="userChip" title="تعديل الملف الشخصي">
         <div class="user-avatar" id="userAvatar">؟</div>
         <div>
@@ -1331,153 +323,84 @@ table.data tbody tr:hover { background: var(--surface-2); }
       </div>
     </header>
 
-    <!-- CONTENT -->
     <main class="content" id="content">
-
-      <!-- ═══ VIEW: OVERVIEW ═══ -->
       <section class="view active" data-view="overview">
         <div class="page-head">
-          <div>
-            <h1>نظرة عامة</h1>
-            <p>ملخص شامل لحالة المستودع — تحديث تلقائي كل ثانيتين</p>
-          </div>
+          <div><h1>نظرة عامة</h1><p>ملخص شامل لحالة المستودع — تحديث تلقائي كل ثانيتين</p></div>
           <div class="page-actions">
             <div class="chips" id="timeRangeChips">
               <button class="chip active" data-range="1h">ساعة</button>
               <button class="chip" data-range="24h">24 ساعة</button>
               <button class="chip" data-range="7d">7 أيام</button>
             </div>
-            <button class="btn btn-ghost btn-sm" id="exportBtn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-              تصدير
-            </button>
-            <button class="btn btn-primary btn-sm" id="refreshBtn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-              تحديث
-            </button>
+            <button class="btn btn-ghost btn-sm" id="exportBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>تصدير</button>
+            <button class="btn btn-primary btn-sm" id="refreshBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>تحديث</button>
           </div>
         </div>
-
         <div class="kpi-grid" id="kpiGrid"></div>
-
         <div class="grid-overview">
           <div class="card">
             <div class="card-head">
-              <div>
-                <h3>اتجاه الحرارة والرطوبة</h3>
-                <div class="sub">متوسط القراءات عبر جميع المناطق</div>
-              </div>
+              <div><h3>اتجاه الحرارة والرطوبة</h3><div class="sub">متوسط القراءات عبر جميع المناطق</div></div>
               <div class="chips">
                 <button class="chip active" data-series="both">الكل</button>
                 <button class="chip" data-series="temp">الحرارة</button>
                 <button class="chip" data-series="hum">الرطوبة</button>
               </div>
             </div>
-            <div class="card-body">
-              <div class="chart-wrapper"><canvas id="mainChart"></canvas></div>
-            </div>
+            <div class="card-body"><div class="chart-wrapper"><canvas id="mainChart"></canvas></div></div>
           </div>
-
           <div class="card">
-            <div class="card-head">
-              <div>
-                <h3>مؤشر السلامة</h3>
-                <div class="sub">نسبة المناطق ضمن النطاق الآمن</div>
-              </div>
-            </div>
+            <div class="card-head"><div><h3>مؤشر السلامة</h3><div class="sub">نسبة المناطق ضمن النطاق الآمن</div></div></div>
             <div class="card-body">
               <div class="gauge-wrap">
                 <div class="gauge-chart">
                   <canvas id="gaugeChart"></canvas>
-                  <div class="gauge-center">
-                    <div class="gauge-value" id="gaugeValue">100<small>%</small></div>
-                    <div class="gauge-label">مناطق آمنة</div>
-                  </div>
+                  <div class="gauge-center"><div class="gauge-value" id="gaugeValue">100<small>%</small></div><div class="gauge-label">مناطق آمنة</div></div>
                 </div>
               </div>
               <div class="insight mt-3" id="insightCard">
-                <div class="insight-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                </div>
-                <div class="insight-body" id="insightBody">
-                  <h5>النظام يعمل بكفاءة</h5>
-                  <p>جميع المناطق ضمن النطاق المثالي. لا توجد إجراءات مطلوبة حالياً.</p>
-                </div>
+                <div class="insight-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div>
+                <div class="insight-body" id="insightBody"><h5>النظام يعمل بكفاءة</h5><p>جميع المناطق ضمن النطاق المثالي. لا توجد إجراءات مطلوبة حالياً.</p></div>
               </div>
             </div>
           </div>
         </div>
-
         <div class="grid-overview-2">
           <div class="card">
-            <div class="card-head">
-              <div>
-                <h3>آخر التنبيهات</h3>
-                <div class="sub">مباشر من النظام</div>
-              </div>
-              <button class="btn btn-ghost btn-sm" data-goto="alerts">عرض الكل</button>
-            </div>
-            <div class="card-body" style="padding: 8px;" id="recentAlerts"></div>
+            <div class="card-head"><div><h3>آخر التنبيهات</h3><div class="sub">مباشر من النظام</div></div><button class="btn btn-ghost btn-sm" data-goto="alerts">عرض الكل</button></div>
+            <div class="card-body" style="padding:8px" id="recentAlerts"></div>
           </div>
-
           <div class="card">
-            <div class="card-head">
-              <div>
-                <h3>التدفق المباشر</h3>
-                <div class="sub">آخر الأحداث في النظام</div>
-              </div>
-            </div>
-            <div class="card-body" style="padding: 8px;">
-              <div class="feed-list" id="liveFeed"></div>
-            </div>
+            <div class="card-head"><div><h3>التدفق المباشر</h3><div class="sub">آخر الأحداث في النظام</div></div></div>
+            <div class="card-body" style="padding:8px"><div class="feed-list" id="liveFeed"></div></div>
           </div>
-
           <div class="card">
-            <div class="card-head">
-              <div>
-                <h3>توزيع الحالات</h3>
-                <div class="sub">عبر 8 مناطق</div>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="chart-wrapper short"><canvas id="statusChart"></canvas></div>
-            </div>
+            <div class="card-head"><div><h3>توزيع الحالات</h3><div class="sub">عبر 8 مناطق</div></div></div>
+            <div class="card-body"><div class="chart-wrapper short"><canvas id="statusChart"></canvas></div></div>
           </div>
         </div>
       </section>
 
-      <!-- ═══ VIEW: ZONES ═══ -->
       <section class="view" data-view="zones">
         <div class="page-head">
-          <div>
-            <h1>المناطق</h1>
-            <p>8 مناطق تحت المراقبة — انقر على أي منطقة لعرض التفاصيل</p>
-          </div>
+          <div><h1>المناطق</h1><p>8 مناطق تحت المراقبة — انقر على أي منطقة لعرض التفاصيل</p></div>
           <div class="page-actions">
-            <div class="search-input">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-              <input type="text" id="zoneSearch" placeholder="ابحث في المناطق...">
-            </div>
+            <div class="search-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" id="zoneSearch" placeholder="ابحث في المناطق..."></div>
           </div>
         </div>
-
         <div class="chips mb-4" id="zoneFilterChips">
           <button class="chip active" data-filter="all">الكل (8)</button>
           <button class="chip" data-filter="ok">آمنة</button>
           <button class="chip" data-filter="warn">تحذيرية</button>
           <button class="chip" data-filter="crit">حرجة</button>
         </div>
-
         <div class="zone-grid" id="zoneGrid"></div>
       </section>
 
-      <!-- ═══ VIEW: ANALYTICS ═══ -->
       <section class="view" data-view="analytics">
         <div class="page-head">
-          <div>
-            <h1>التحليلات</h1>
-            <p>رؤى معمّقة عبر المناطق والفترات الزمنية</p>
-          </div>
+          <div><h1>التحليلات</h1><p>رؤى معمّقة عبر المناطق والفترات الزمنية</p></div>
           <div class="page-actions">
             <div class="chips" id="analyticsRange">
               <button class="chip active" data-range="24h">24 ساعة</button>
@@ -1486,85 +409,29 @@ table.data tbody tr:hover { background: var(--surface-2); }
             </div>
           </div>
         </div>
-
         <div class="grid-2 mb-4">
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <h3>مقارنة الحرارة بين المناطق</h3>
-                <div class="sub">متوسط القراءات لكل منطقة</div>
-              </div>
-            </div>
-            <div class="card-body"><div class="chart-wrapper"><canvas id="compareChart"></canvas></div></div>
-          </div>
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <h3>صحة المناطق</h3>
-                <div class="sub">تقييم متعدد الأبعاد</div>
-              </div>
-            </div>
-            <div class="card-body"><div class="chart-wrapper"><canvas id="radarChart"></canvas></div></div>
-          </div>
+          <div class="card"><div class="card-head"><div><h3>مقارنة الحرارة بين المناطق</h3><div class="sub">متوسط القراءات لكل منطقة</div></div></div><div class="card-body"><div class="chart-wrapper"><canvas id="compareChart"></canvas></div></div></div>
+          <div class="card"><div class="card-head"><div><h3>صحة المناطق</h3><div class="sub">تقييم متعدد الأبعاد</div></div></div><div class="card-body"><div class="chart-wrapper"><canvas id="radarChart"></canvas></div></div></div>
         </div>
-
         <div class="card mb-4">
-          <div class="card-head">
-            <div>
-              <h3>خريطة الحرارة (24 ساعة)</h3>
-              <div class="sub">كل صف يمثل منطقة — كل عمود ساعة</div>
-            </div>
-          </div>
+          <div class="card-head"><div><h3>خريطة الحرارة (24 ساعة)</h3><div class="sub">كل صف يمثل منطقة — كل عمود ساعة</div></div></div>
           <div class="card-body">
             <div class="heatmap" id="heatmap"></div>
-            <div class="hm-legend">
-              <span>أبرد</span>
-              <div class="hm-legend-bar" id="hmLegendBar"></div>
-              <span>أسخن</span>
-            </div>
+            <div class="hm-legend"><span>أبرد</span><div class="hm-legend-bar" id="hmLegendBar"></div><span>أسخن</span></div>
           </div>
         </div>
-
         <div class="grid-3">
-          <div class="card">
-            <div class="card-body">
-              <div class="text-small text-muted mb-2">إجمالي القراءات</div>
-              <div class="kpi-value" id="statReadings">0</div>
-              <div class="text-small text-muted">منذ بدء التشغيل</div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-body">
-              <div class="text-small text-muted mb-2">متوسط زمن الاستجابة</div>
-              <div class="kpi-value" id="statResponse">2.8<small>s</small></div>
-              <div class="text-small text-muted">لإنذارات النظام</div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-body">
-              <div class="text-small text-muted mb-2">دقة الاستشعار</div>
-              <div class="kpi-value" id="statAccuracy">99.9<small>%</small></div>
-              <div class="text-small text-muted">مقارنة بالمعايرة</div>
-            </div>
-          </div>
+          <div class="card"><div class="card-body"><div class="text-small text-muted mb-2">إجمالي القراءات</div><div class="kpi-value" id="statReadings">0</div><div class="text-small text-muted">منذ بدء التشغيل</div></div></div>
+          <div class="card"><div class="card-body"><div class="text-small text-muted mb-2">متوسط زمن الاستجابة</div><div class="kpi-value">2.8<small>s</small></div><div class="text-small text-muted">لإنذارات النظام</div></div></div>
+          <div class="card"><div class="card-body"><div class="text-small text-muted mb-2">دقة الاستشعار</div><div class="kpi-value">99.9<small>%</small></div><div class="text-small text-muted">مقارنة بالمعايرة</div></div></div>
         </div>
       </section>
 
-      <!-- ═══ VIEW: ALERTS ═══ -->
       <section class="view" data-view="alerts">
         <div class="page-head">
-          <div>
-            <h1>التنبيهات</h1>
-            <p>إدارة جميع التنبيهات والإنذارات النشطة</p>
-          </div>
-          <div class="page-actions">
-            <button class="btn btn-ghost btn-sm" id="ackAllBtn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-              تأكيد الكل
-            </button>
-          </div>
+          <div><h1>التنبيهات</h1><p>إدارة جميع التنبيهات والإنذارات النشطة</p></div>
+          <div class="page-actions"><button class="btn btn-ghost btn-sm" id="ackAllBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>تأكيد الكل</button></div>
         </div>
-
         <div class="chips mb-4" id="alertFilterChips">
           <button class="chip active" data-filter="all">الكل</button>
           <button class="chip" data-filter="active">نشطة</button>
@@ -1572,119 +439,45 @@ table.data tbody tr:hover { background: var(--surface-2); }
           <button class="chip" data-filter="warn">تحذيرية</button>
           <button class="chip" data-filter="resolved">تمت معالجتها</button>
         </div>
-
-        <div class="card">
-          <div class="table-scroll">
-            <table class="data" id="alertsTable">
-              <thead>
-                <tr>
-                  <th>الوقت</th>
-                  <th>المنطقة</th>
-                  <th>النوع</th>
-                  <th>القيمة</th>
-                  <th>الخطورة</th>
-                  <th>الحالة</th>
-                  <th>إجراء</th>
-                </tr>
-              </thead>
-              <tbody id="alertsBody"></tbody>
-            </table>
-          </div>
-        </div>
+        <div class="card"><div class="table-scroll"><table class="data"><thead><tr><th>الوقت</th><th>المنطقة</th><th>النوع</th><th>القيمة</th><th>الخطورة</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="alertsBody"></tbody></table></div></div>
       </section>
 
-      <!-- ═══ VIEW: DEVICES ═══ -->
       <section class="view" data-view="devices">
         <div class="page-head">
-          <div>
-            <h1>الأجهزة</h1>
-            <p>حالة جميع المستشعرات والبوابات المتصلة</p>
-          </div>
+          <div><h1>الأجهزة</h1><p>حالة جميع المستشعرات والبوابات المتصلة</p></div>
           <div class="page-actions">
-            <div class="search-input">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-              <input type="text" id="deviceSearch" placeholder="ابحث بالاسم أو المعرف...">
-            </div>
+            <div class="search-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" id="deviceSearch" placeholder="ابحث بالاسم أو المعرف..."></div>
           </div>
         </div>
-
         <div class="grid-3 mb-4">
-          <div class="card">
-            <div class="card-body">
-              <div class="text-small text-muted mb-2">إجمالي الأجهزة</div>
-              <div class="kpi-value" id="statDevices">24</div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-body">
-              <div class="text-small text-muted mb-2">أجهزة متصلة</div>
-              <div class="kpi-value" style="color:var(--success)" id="statOnline">24</div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-body">
-              <div class="text-small text-muted mb-2">تنبيهات البطارية</div>
-              <div class="kpi-value" style="color:var(--warning)" id="statBattery">0</div>
-            </div>
-          </div>
+          <div class="card"><div class="card-body"><div class="text-small text-muted mb-2">إجمالي الأجهزة</div><div class="kpi-value" id="statDevices">24</div></div></div>
+          <div class="card"><div class="card-body"><div class="text-small text-muted mb-2">أجهزة متصلة</div><div class="kpi-value" style="color:var(--success)" id="statOnline">24</div></div></div>
+          <div class="card"><div class="card-body"><div class="text-small text-muted mb-2">تنبيهات البطارية</div><div class="kpi-value" style="color:var(--warning)" id="statBattery">0</div></div></div>
         </div>
-
-        <div class="card">
-          <div class="card-head">
-            <h3>قائمة الأجهزة</h3>
-          </div>
-          <div id="deviceList"></div>
-        </div>
+        <div class="card"><div class="card-head"><h3>قائمة الأجهزة</h3></div><div id="deviceList"></div></div>
       </section>
 
-      <!-- ═══ VIEW: REPORTS ═══ -->
       <section class="view" data-view="reports">
-        <div class="page-head">
-          <div>
-            <h1>التقارير</h1>
-            <p>توليد وتنزيل تقارير شاملة عن أداء المستودع</p>
-          </div>
-        </div>
-
+        <div class="page-head"><div><h1>التقارير</h1><p>توليد وتنزيل تقارير شاملة عن أداء المستودع</p></div></div>
         <div class="grid-3 mb-4">
           <div class="report-card" data-report="daily">
-            <div class="report-icon" style="background:rgba(34,211,238,.1);color:var(--primary)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-            </div>
-            <h4>التقرير اليومي</h4>
-            <p>ملخص الحرارة والرطوبة والتنبيهات خلال 24 ساعة</p>
-            <button class="btn btn-sm btn-ghost">توليد PDF</button>
+            <div class="report-icon" style="background:rgba(34,211,238,.1);color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+            <h4>التقرير اليومي</h4><p>ملخص الحرارة والرطوبة والتنبيهات خلال 24 ساعة</p><button class="btn btn-sm btn-ghost">توليد PDF</button>
           </div>
           <div class="report-card" data-report="weekly">
-            <div class="report-icon" style="background:rgba(167,139,250,.1);color:var(--violet)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
-            </div>
-            <h4>التقرير الأسبوعي</h4>
-            <p>تحليل الاتجاهات والمقارنات خلال 7 أيام</p>
-            <button class="btn btn-sm btn-ghost">توليد PDF</button>
+            <div class="report-icon" style="background:rgba(167,139,250,.1);color:var(--violet)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg></div>
+            <h4>التقرير الأسبوعي</h4><p>تحليل الاتجاهات والمقارنات خلال 7 أيام</p><button class="btn btn-sm btn-ghost">توليد PDF</button>
           </div>
           <div class="report-card" data-report="compliance">
-            <div class="report-icon" style="background:rgba(16,185,129,.1);color:var(--success)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-            </div>
-            <h4>تقرير الامتثال</h4>
-            <p>الامتثال لمعايير التخزين الصحية والصناعية</p>
-            <button class="btn btn-sm btn-ghost">توليد PDF</button>
+            <div class="report-icon" style="background:rgba(16,185,129,.1);color:var(--success)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
+            <h4>تقرير الامتثال</h4><p>الامتثال لمعايير التخزين الصحية والصناعية</p><button class="btn btn-sm btn-ghost">توليد PDF</button>
           </div>
         </div>
-
         <div class="card">
-          <div class="card-head">
-            <div>
-              <h3>التقارير الأخيرة</h3>
-              <div class="sub">التقارير المُولّدة خلال الشهر</div>
-            </div>
-          </div>
+          <div class="card-head"><div><h3>التقارير الأخيرة</h3><div class="sub">التقارير المُولّدة خلال الشهر</div></div></div>
           <div class="table-scroll">
             <table class="data">
-              <thead>
-                <tr><th>الاسم</th><th>النوع</th><th>التاريخ</th><th>الحجم</th><th></th></tr>
-              </thead>
+              <thead><tr><th>الاسم</th><th>النوع</th><th>التاريخ</th><th>الحجم</th><th></th></tr></thead>
               <tbody>
                 <tr><td>تقرير يومي — 2025-01-14</td><td><span class="badge badge-cyan">يومي</span></td><td class="text-muted">2025-01-14</td><td class="mono">248 KB</td><td><button class="btn btn-sm btn-ghost">تنزيل</button></td></tr>
                 <tr><td>تقرير أسبوعي — الأسبوع 2</td><td><span class="badge badge-violet">أسبوعي</span></td><td class="text-muted">2025-01-13</td><td class="mono">1.2 MB</td><td><button class="btn btn-sm btn-ghost">تنزيل</button></td></tr>
@@ -1695,23 +488,13 @@ table.data tbody tr:hover { background: var(--surface-2); }
         </div>
       </section>
 
-      <!-- ═══ VIEW: SETTINGS ═══ -->
       <section class="view" data-view="settings">
         <div class="page-head">
-          <div>
-            <h1>الإعدادات</h1>
-            <p>تخصيص حدود الإنذار والتنبيهات</p>
-          </div>
-          <div class="page-actions">
-            <button class="btn btn-primary btn-sm" id="saveSettings">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
-              حفظ الإعدادات
-            </button>
-          </div>
+          <div><h1>الإعدادات</h1><p>تخصيص حدود الإنذار والتنبيهات</p></div>
+          <div class="page-actions"><button class="btn btn-primary btn-sm" id="saveSettings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>حفظ الإعدادات</button></div>
         </div>
-
         <div class="grid-2">
-          <div class="card" style="grid-column: 1 / -1;">
+          <div class="card" style="grid-column:1/-1">
             <div class="card-head"><h3>الملف الشخصي</h3></div>
             <div class="card-body">
               <div class="profile-head">
@@ -1730,172 +513,76 @@ table.data tbody tr:hover { background: var(--surface-2); }
               <div class="text-small text-muted">يمكنك أيضاً تعديل ملفك الشخصي في أي وقت بالنقر على بطاقة المستخدم في الشريط العلوي.</div>
             </div>
           </div>
-
           <div class="card">
             <div class="card-head"><h3>حدود الحرارة</h3></div>
             <div class="card-body">
               <div class="setting-row">
-                <div class="setting-info">
-                  <h4>الحد الأدنى للحرارة</h4>
-                  <p>تنبيه عند انخفاض الحرارة عن هذه القيمة</p>
-                </div>
-                <div class="slider-row">
-                  <input type="range" min="0" max="20" value="2" id="tempMinSlider">
-                  <span class="slider-val" id="tempMinVal">2°C</span>
-                </div>
+                <div class="setting-info"><h4>الحد الأدنى للحرارة</h4><p>تنبيه عند انخفاض الحرارة عن هذه القيمة</p></div>
+                <div class="slider-row"><input type="range" min="0" max="20" value="2" id="tempMinSlider"><span class="slider-val" id="tempMinVal">2°C</span></div>
               </div>
               <div class="setting-row">
-                <div class="setting-info">
-                  <h4>الحد الأقصى للحرارة</h4>
-                  <p>تنبيه عند تجاوز الحرارة هذه القيمة</p>
-                </div>
-                <div class="slider-row">
-                  <input type="range" min="5" max="40" value="8" id="tempMaxSlider">
-                  <span class="slider-val" id="tempMaxVal">8°C</span>
-                </div>
+                <div class="setting-info"><h4>الحد الأقصى للحرارة</h4><p>تنبيه عند تجاوز الحرارة هذه القيمة</p></div>
+                <div class="slider-row"><input type="range" min="5" max="40" value="8" id="tempMaxSlider"><span class="slider-val" id="tempMaxVal">8°C</span></div>
               </div>
             </div>
           </div>
-
           <div class="card">
             <div class="card-head"><h3>حدود الرطوبة</h3></div>
             <div class="card-body">
               <div class="setting-row">
-                <div class="setting-info">
-                  <h4>الحد الأدنى للرطوبة</h4>
-                  <p>تنبيه عند انخفاض الرطوبة عن هذه النسبة</p>
-                </div>
-                <div class="slider-row">
-                  <input type="range" min="10" max="70" value="40" id="humMinSlider">
-                  <span class="slider-val" id="humMinVal">40%</span>
-                </div>
+                <div class="setting-info"><h4>الحد الأدنى للرطوبة</h4><p>تنبيه عند انخفاض الرطوبة عن هذه النسبة</p></div>
+                <div class="slider-row"><input type="range" min="10" max="70" value="40" id="humMinSlider"><span class="slider-val" id="humMinVal">40%</span></div>
               </div>
               <div class="setting-row">
-                <div class="setting-info">
-                  <h4>الحد الأقصى للرطوبة</h4>
-                  <p>تنبيه عند تجاوز الرطوبة هذه النسبة</p>
-                </div>
-                <div class="slider-row">
-                  <input type="range" min="40" max="100" value="65" id="humMaxSlider">
-                  <span class="slider-val" id="humMaxVal">65%</span>
-                </div>
+                <div class="setting-info"><h4>الحد الأقصى للرطوبة</h4><p>تنبيه عند تجاوز الرطوبة هذه النسبة</p></div>
+                <div class="slider-row"><input type="range" min="40" max="100" value="65" id="humMaxSlider"><span class="slider-val" id="humMaxVal">65%</span></div>
               </div>
             </div>
           </div>
-
           <div class="card">
             <div class="card-head"><h3>التنبيهات</h3></div>
             <div class="card-body">
-              <div class="setting-row">
-                <div class="setting-info">
-                  <h4>تنبيهات البريد الإلكتروني</h4>
-                  <p>إرسال نسخة من كل تنبيه إلى بريدك</p>
-                </div>
-                <div class="switch on" data-toggle></div>
-              </div>
-              <div class="setting-row">
-                <div class="setting-info">
-                  <h4>تنبيهات الهاتف</h4>
-                  <p>إشعارات فورية عبر تطبيق الهاتف</p>
-                </div>
-                <div class="switch on" data-toggle></div>
-              </div>
-              <div class="setting-row">
-                <div class="setting-info">
-                  <h4>التصعيد التلقائي</h4>
-                  <p>رفع مستوى التنبيه عند عدم الاستجابة</p>
-                </div>
-                <div class="switch" data-toggle></div>
-              </div>
+              <div class="setting-row"><div class="setting-info"><h4>تنبيهات البريد الإلكتروني</h4><p>إرسال نسخة من كل تنبيه إلى بريدك</p></div><div class="switch on" data-toggle></div></div>
+              <div class="setting-row"><div class="setting-info"><h4>تنبيهات الهاتف</h4><p>إشعارات فورية عبر تطبيق الهاتف</p></div><div class="switch on" data-toggle></div></div>
+              <div class="setting-row"><div class="setting-info"><h4>التصعيد التلقائي</h4><p>رفع مستوى التنبيه عند عدم الاستجابة</p></div><div class="switch" data-toggle></div></div>
             </div>
           </div>
-
           <div class="card">
             <div class="card-head"><h3>النظام</h3></div>
             <div class="card-body">
-              <div class="setting-row">
-                <div class="setting-info">
-                  <h4>الوضع الفاتح</h4>
-                  <p>تبديل مظهر اللوحة</p>
-                </div>
-                <div class="switch" data-toggle id="themeSwitch"></div>
-              </div>
-              <div class="setting-row">
-                <div class="setting-info">
-                  <h4>الوضع التجريبي</h4>
-                  <p>محاكاة بيانات عشوائية للعرض</p>
-                </div>
-                <div class="switch on" data-toggle></div>
-              </div>
-              <div class="setting-row">
-                <div class="setting-info">
-                  <h4>حفظ السجلات</h4>
-                  <p>مدة الاحتفاظ بالبيانات التاريخية</p>
-                </div>
-                <select class="btn" style="padding:6px 10px">
-                  <option>30 يوم</option>
-                  <option>90 يوم</option>
-                  <option>سنة</option>
-                </select>
-              </div>
+              <div class="setting-row"><div class="setting-info"><h4>الوضع الفاتح</h4><p>تبديل مظهر اللوحة</p></div><div class="switch" data-toggle id="themeSwitch"></div></div>
+              <div class="setting-row"><div class="setting-info"><h4>الوضع التجريبي</h4><p>محاكاة بيانات عشوائية للعرض</p></div><div class="switch on" data-toggle></div></div>
+              <div class="setting-row"><div class="setting-info"><h4>حفظ السجلات</h4><p>مدة الاحتفاظ بالبيانات التاريخية</p></div><select class="btn" style="padding:6px 10px"><option>30 يوم</option><option>90 يوم</option><option>سنة</option></select></div>
             </div>
           </div>
         </div>
       </section>
-
     </main>
   </div>
 </div>
 
-<!-- ═══════════ OVERLAYS ═══════════ -->
 <div class="overlay" id="overlay"></div>
-
 <div class="drawer" id="notifDrawer">
-  <div class="drawer-head">
-    <h3>الإشعارات</h3>
-    <button class="icon-btn" data-close-drawer>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-    </button>
-  </div>
+  <div class="drawer-head"><h3>الإشعارات</h3><button class="icon-btn" data-close-drawer><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
   <div class="drawer-body" id="notifList"></div>
 </div>
-
 <div class="overlay" id="paletteOverlay">
   <div class="palette">
-    <div class="palette-input">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input type="text" id="paletteInput" placeholder="ابحث عن صفحة، منطقة، أو إجراء...">
-    </div>
+    <div class="palette-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" id="paletteInput" placeholder="ابحث عن صفحة، منطقة، أو إجراء..."></div>
     <div class="palette-list" id="paletteList"></div>
   </div>
 </div>
-
 <div class="overlay" id="modalOverlay">
   <div class="modal">
-    <div class="modal-head">
-      <div>
-        <h3 id="modalTitle">تفاصيل المنطقة</h3>
-        <p id="modalSub"></p>
-      </div>
-      <button class="modal-close" data-close-modal>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
-    </div>
+    <div class="modal-head"><div><h3 id="modalTitle">تفاصيل المنطقة</h3><p id="modalSub"></p></div><button class="modal-close" data-close-modal><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
     <div class="modal-body" id="modalBody"></div>
   </div>
 </div>
-
-<!-- PROFILE MODAL -->
 <div class="overlay" id="profileOverlay">
   <div class="modal" style="width:min(480px,92vw)">
     <div class="modal-head">
-      <div>
-        <h3 id="profileTitle">إعداد الملف الشخصي</h3>
-        <p id="profileSub">أدخل بياناتك لتخصيص تجربتك</p>
-      </div>
-      <button class="modal-close" data-close-profile aria-label="إغلاق">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
+      <div><h3 id="profileTitle">إعداد الملف الشخصي</h3><p id="profileSub">أدخل بياناتك لتخصيص تجربتك</p></div>
+      <button class="modal-close" data-close-profile aria-label="إغلاق"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="modal-body">
       <div class="profile-head">
@@ -1935,14 +622,9 @@ table.data tbody tr:hover { background: var(--surface-2); }
     </div>
   </div>
 </div>
-
 <div class="toasts" id="toasts"></div>
 
 <script>
-/* ═══════════════════════════════════════════
-   STOCKSAFETY — DASHBOARD APP
-   ═══════════════════════════════════════════ */
-
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const rand = (a, b) => Math.random() * (b - a) + a;
@@ -1950,7 +632,6 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const fmt = (n, d = 1) => Number(n).toFixed(d);
 const now = () => new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-/* ─── ICON HELPERS ─── */
 const ICONS = {
   temp: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg>',
   hum: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>',
@@ -1971,39 +652,24 @@ const ICONS = {
   power: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M18.36 6.64a9 9 0 11-12.73 0M12 2v10"/></svg>'
 };
 
-/* ─── STATE ─── */
 const state = {
-  view: 'overview',
-  paused: false,
-  theme: 'dark',
-  uptimeStart: Date.now(),
-  readingsTotal: 12847,
+  view: 'overview', paused: false, theme: 'dark',
+  uptimeStart: Date.now(), readingsTotal: 12847,
   user: { name: '', role: '', email: '', phone: '' },
-  zones: [],
-  devices: [],
-  alerts: [],
-  events: [],
+  zones: [], devices: [], alerts: [], events: [],
   thresholds: { tempMin: 2, tempMax: 8, humMin: 40, humMax: 65 },
-  charts: {},
-  zoneFilter: 'all',
-  alertFilter: 'all',
-  zoneSearch: '',
-  mainSeries: 'both',
-  notifOpen: false
+  charts: {}, zoneFilter: 'all', alertFilter: 'all', zoneSearch: ''
 };
 
-/* ═══════════════════════════════════════════
-   USER PROFILE
-   ═══════════════════════════════════════════ */
+/* ═══════════ USER PROFILE ═══════════ */
 const USER_KEY = 'stocksafety.user';
 
 function getInitials(name) {
   const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return '؟';
-  const strip = w => w.replace(/^[^\u0600-\u06FFa-zA-Z]+/, '').replace(/^ال/, '');
-  const first = (strip(parts[0])[0] || parts[0][0] || '؟');
+  const first = parts[0][0] || '؟';
   if (parts.length === 1) return first;
-  const last = strip(parts[parts.length - 1])[0] || '';
+  const last = parts[parts.length - 1][0] || '';
   return (first + last).toUpperCase();
 }
 
@@ -2036,15 +702,11 @@ function applyUser() {
   $('#userName').textContent = name;
   $('#userRole').textContent = role;
   $('#userAvatar').textContent = getInitials(name);
-
-  const sName = $('#settingsName');
-  if (sName) {
-    $('#settingsName').textContent = name;
-    $('#settingsRole').textContent = role;
-    $('#settingsEmail').textContent = u.email || 'لا يوجد بريد إلكتروني';
-    $('#settingsPhone').textContent = u.phone || 'لا يوجد رقم هاتف';
-    $('#settingsAvatar').textContent = getInitials(name);
-  }
+  $('#settingsName').textContent = name;
+  $('#settingsRole').textContent = role;
+  $('#settingsEmail').textContent = u.email || 'لا يوجد بريد إلكتروني';
+  $('#settingsPhone').textContent = u.phone || 'لا يوجد رقم هاتف';
+  $('#settingsAvatar').textContent = getInitials(name);
 }
 
 function openProfile(isSetup = false) {
@@ -2059,9 +721,7 @@ function openProfile(isSetup = false) {
   setTimeout(() => $('#profileName').focus(), 80);
 }
 
-function closeProfile() {
-  $('#profileOverlay').classList.remove('show');
-}
+function closeProfile() { $('#profileOverlay').classList.remove('show'); }
 
 function handleProfileSubmit(e) {
   e.preventDefault();
@@ -2083,7 +743,7 @@ function handleProfileSubmit(e) {
   toast('success', 'تم الحفظ', `مرحباً ${state.user.name} — تم تحديث ملفك الشخصي`);
 }
 
-/* ─── INITIAL ZONES ─── */
+/* ═══════════ ZONES ═══════════ */
 const ZONE_DEFS = [
   { id: 'CSA', name: 'تبريد A', desc: 'منتجات طازجة', color: '#22d3ee' },
   { id: 'CSB', name: 'تبريد B', desc: 'منتجات طازجة', color: '#22d3ee' },
@@ -2096,18 +756,14 @@ const ZONE_DEFS = [
 ];
 
 function initZones() {
-  state.zones = ZONE_DEFS.map((def, i) => {
-    const isCold = ['CSA', 'CSB', 'PHR', 'FOD'].includes(def.id);
-    const tempBase = isCold ? rand(3, 6) : rand(15, 22);
-    const humBase = isCold ? rand(45, 60) : rand(35, 55);
+  state.zones = ZONE_DEFS.map(def => {
+    const isCold = ['CSA','CSB','PHR','FOD'].includes(def.id);
+    const tempBase = isCold ? rand(3,6) : rand(15,22);
+    const humBase = isCold ? rand(45,60) : rand(35,55);
     return {
-      ...def,
-      temp: tempBase,
-      hum: humBase,
-      tempMin: isCold ? 2 : 12,
-      tempMax: isCold ? 8 : 24,
-      humMin: isCold ? 40 : 30,
-      humMax: isCold ? 65 : 58,
+      ...def, temp: tempBase, hum: humBase,
+      tempMin: isCold ? 2 : 12, tempMax: isCold ? 8 : 24,
+      humMin: isCold ? 40 : 30, humMax: isCold ? 65 : 58,
       status: 'ok',
       history: { temp: [], hum: [], labels: [] },
       deviceCount: 3
@@ -2132,8 +788,7 @@ function initDevices() {
       state.devices.push({
         id: `${z.id}-S${i}`,
         name: `مستشعر ${i} — ${z.name}`,
-        zone: z.id,
-        zoneName: z.name,
+        zone: z.id, zoneName: z.name,
         battery: Math.round(rand(35, 100)),
         signal: Math.round(rand(60, 100)),
         lastSeen: Math.round(rand(1, 15)),
@@ -2151,10 +806,7 @@ function initAlerts() {
     { zone: 'DRY', type: 'door', value: 'مفتوح', severity: 'info', active: false, time: '13:41:19' },
     { zone: 'SHP', type: 'power', value: 'انقطاع', severity: 'crit', active: false, time: '12:30:55' }
   ];
-  state.alerts = samples.map(s => ({
-    ...s,
-    zoneName: state.zones.find(z => z.id === s.zone)?.name || s.zone
-  }));
+  state.alerts = samples.map(s => ({ ...s, zoneName: state.zones.find(z => z.id === s.zone)?.name || s.zone }));
 }
 
 function initEvents() {
@@ -2165,9 +817,577 @@ function initEvents() {
   ];
 }
 
-/* ═══════════════════════════════════════════
-   ROUTER
-   ═══════════════════════════════════════════ */
+/* ═══════════ ROUTER ═══════════ */
 const VIEW_TITLES = {
   overview: ['نظرة عامة', 'مراقبة لحظية لجميع المناطق'],
-  zones: ['المناطق', '8 مناطق
+  zones: ['المناطق', '8 مناطق تحت المراقبة'],
+  analytics: ['التحليلات', 'رؤى معمقة'],
+  alerts: ['التنبيهات', 'إدارة التنبيهات والإنذارات'],
+  devices: ['الأجهزة', 'المستشعرات والبوابات المتصلة'],
+  reports: ['التقارير', 'توليد وتنزيل التقارير'],
+  settings: ['الإعدادات', 'تخصيص حدود الإنذار']
+};
+
+function goTo(view) {
+  if (!VIEW_TITLES[view]) return;
+  state.view = view;
+  $$('.view').forEach(v => v.classList.toggle('active', v.dataset.view === view));
+  $$('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.view === view));
+  const [title, sub] = VIEW_TITLES[view];
+  $('#topbarTitle').innerHTML = `${title}<small>${sub}</small>`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  $('#sidebar').classList.remove('open');
+  ensureCharts(view);
+  if (view === 'zones') renderZoneGrid();
+  if (view === 'alerts') renderAlerts();
+  if (view === 'devices') renderDevices();
+  if (view === 'analytics') renderAnalytics();
+}
+
+/* ═══════════ CHARTS ═══════════ */
+function ensureCharts(view) {
+  if (view === 'overview') {
+    if (!state.charts.main) initMainChart();
+    if (!state.charts.gauge) initGaugeChart();
+    if (!state.charts.status) initStatusChart();
+  }
+  if (view === 'analytics') {
+    if (!state.charts.compare) initCompareChart();
+    if (!state.charts.radar) initRadarChart();
+    renderHeatmap();
+  }
+}
+
+function initMainChart() {
+  const ctx = $('#mainChart').getContext('2d');
+  const gradT = ctx.createLinearGradient(0, 0, 0, 320);
+  gradT.addColorStop(0, 'rgba(34,211,238,.28)');
+  gradT.addColorStop(1, 'rgba(34,211,238,0)');
+  const gradH = ctx.createLinearGradient(0, 0, 0, 320);
+  gradH.addColorStop(0, 'rgba(167,139,250,.24)');
+  gradH.addColorStop(1, 'rgba(167,139,250,0)');
+  const labels = state.zones[0].history.labels;
+  const tData = labels.map((_, i) => state.zones.reduce((s, z) => s + z.history.temp[i], 0) / state.zones.length);
+  const hData = labels.map((_, i) => state.zones.reduce((s, z) => s + z.history.hum[i], 0) / state.zones.length);
+  state.charts.main = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [
+      { label: 'الحرارة (°C)', data: tData, borderColor: '#22d3ee', backgroundColor: gradT, borderWidth: 2.2, tension: .4, pointRadius: 0, pointHoverRadius: 4, fill: true, yAxisID: 'y' },
+      { label: 'الرطوبة (%)', data: hData, borderColor: '#a78bfa', backgroundColor: gradH, borderWidth: 2.2, tension: .4, pointRadius: 0, pointHoverRadius: 4, fill: true, yAxisID: 'y1' }
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      animation: { duration: 350 },
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f1724', borderColor: 'rgba(255,255,255,.1)', borderWidth: 1, padding: 10, cornerRadius: 8, titleColor: '#e8eef8', bodyColor: '#8b9cb4' } },
+      scales: {
+        x: { grid: { display: false }, ticks: { display: false } },
+        y: { position: 'right', grid: { color: 'rgba(255,255,255,.04)' }, ticks: { callback: v => v + '°', font: { size: 10 } }, suggestedMin: 0, suggestedMax: 25 },
+        y1: { position: 'left', grid: { display: false }, ticks: { callback: v => v + '%', font: { size: 10 } }, suggestedMin: 20, suggestedMax: 80 }
+      }
+    }
+  });
+}
+
+function initGaugeChart() {
+  const ctx = $('#gaugeChart').getContext('2d');
+  state.charts.gauge = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: ['آمنة','تحذير','خطر'], datasets: [{ data: [8,0,0], backgroundColor: ['#10b981','#f59e0b','#ef4444'], borderWidth: 0, cutout: '78%', hoverOffset: 4 }] },
+    options: { responsive: true, maintainAspectRatio: false, animation: { duration: 500 }, plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f1724', padding: 8, cornerRadius: 6 } } }
+  });
+}
+
+function initStatusChart() {
+  const ctx = $('#statusChart').getContext('2d');
+  state.charts.status = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: ['آمنة','تحذيرية','حرجة'], datasets: [{ data: [8,0,0], backgroundColor: ['#10b981','#f59e0b','#ef4444'], borderColor: '#0a1019', borderWidth: 3, cutout: '62%' }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, boxHeight: 8, padding: 12, usePointStyle: true, pointStyle: 'circle', font: { size: 10 } } }, tooltip: { backgroundColor: '#0f1724', padding: 8, cornerRadius: 6 } } }
+  });
+}
+
+function initCompareChart() {
+  const ctx = $('#compareChart').getContext('2d');
+  state.charts.compare = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: state.zones.map(z => z.name), datasets: [
+      { label: 'الحرارة', data: state.zones.map(z => z.temp), backgroundColor: 'rgba(34,211,238,.7)', borderRadius: 4, barThickness: 14 },
+      { label: 'الرطوبة', data: state.zones.map(z => z.hum), backgroundColor: 'rgba(167,139,250,.6)', borderRadius: 4, barThickness: 14 }
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 400 },
+      plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 8, boxHeight: 8, usePointStyle: true, pointStyle: 'circle', font: { size: 10 } } }, tooltip: { backgroundColor: '#0f1724', padding: 8, cornerRadius: 6 } },
+      scales: { x: { grid: { display: false }, ticks: { font: { size: 10 } } }, y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { font: { size: 10 } } } }
+    }
+  });
+}
+
+function initRadarChart() {
+  const ctx = $('#radarChart').getContext('2d');
+  state.charts.radar = new Chart(ctx, {
+    type: 'radar',
+    data: { labels: state.zones.map(z => z.name), datasets: [{ label: 'مؤشر الصحة', data: state.zones.map(z => z.status === 'ok' ? rand(85,100) : z.status === 'warn' ? rand(55,75) : rand(30,50)), borderColor: '#22d3ee', backgroundColor: 'rgba(34,211,238,.15)', borderWidth: 2, pointBackgroundColor: '#22d3ee', pointBorderColor: '#0a1019', pointBorderWidth: 2, pointRadius: 3 }] },
+    options: { responsive: true, maintainAspectRatio: false, animation: { duration: 400 }, plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f1724', padding: 8, cornerRadius: 6 } }, scales: { r: { min: 0, max: 100, ticks: { display: false, stepSize: 25 }, grid: { color: 'rgba(255,255,255,.06)' }, angleLines: { color: 'rgba(255,255,255,.06)' }, pointLabels: { color: '#8b9cb4', font: { size: 9 } } } } }
+  });
+}
+
+/* ═══════════ RENDER ═══════════ */
+function renderKPIs() {
+  const avgTemp = state.zones.reduce((s, z) => s + z.temp, 0) / state.zones.length;
+  const avgHum = state.zones.reduce((s, z) => s + z.hum, 0) / state.zones.length;
+  const safeCount = state.zones.filter(z => z.status === 'ok').length;
+  const safePct = Math.round(safeCount / state.zones.length * 100);
+  const activeAlerts = state.alerts.filter(a => a.active).length;
+
+  const kpis = [
+    { label: 'متوسط الحرارة', value: fmt(avgTemp), unit: '°C', icon: 'temp', accent: 'var(--primary)', accentBg: 'rgba(34,211,238,.1)', trend: 'up', trendVal: fmt(rand(0.1, 0.8), 1), spark: avgSpark('temp') },
+    { label: 'متوسط الرطوبة', value: fmt(avgHum, 0), unit: '%', icon: 'hum', accent: 'var(--violet)', accentBg: 'rgba(167,139,250,.1)', trend: 'flat', trendVal: 'مستقر', spark: avgSpark('hum') },
+    { label: 'مؤشر السلامة', value: safePct, unit: '%', icon: 'shield', accent: 'var(--success)', accentBg: 'rgba(16,185,129,.1)', trend: safePct === 100 ? 'up' : 'down', trendVal: safePct === 100 ? 'ممتاز' : safePct + '%', spark: null },
+    { label: 'تنبيهات نشطة', value: activeAlerts, unit: '', icon: 'bell', accent: 'var(--danger)', accentBg: 'rgba(239,68,68,.1)', trend: activeAlerts === 0 ? 'up' : 'down', trendVal: activeAlerts === 0 ? 'لا يوجد' : activeAlerts, spark: null }
+  ];
+
+  $('#kpiGrid').innerHTML = kpis.map(k => `
+    <div class="kpi" style="--accent: ${k.accent}; --accent-bg: ${k.accentBg};">
+      <div class="kpi-top">
+        <div class="kpi-icon">${ICONS[k.icon]}</div>
+        <div class="kpi-trend trend-${k.trend}">${k.trend === 'up' ? ICONS.arrowUp : k.trend === 'down' ? ICONS.arrowDown : ICONS.minus}${k.trendVal}</div>
+      </div>
+      <div class="kpi-value">${k.value}<small>${k.unit}</small></div>
+      <div class="kpi-label">${k.label}</div>
+      ${k.spark ? `<div class="kpi-spark">${k.spark}</div>` : ''}
+    </div>
+  `).join('');
+
+  if (state.charts.gauge) {
+    const safe = state.zones.filter(z => z.status === 'ok').length;
+    const warn = state.zones.filter(z => z.status === 'warn').length;
+    const crit = state.zones.filter(z => z.status === 'crit').length;
+    state.charts.gauge.data.datasets[0].data = [safe, warn, crit];
+    state.charts.gauge.update('none');
+  }
+  $('#gaugeValue').innerHTML = `${safePct}<small>%</small>`;
+
+  if (state.charts.status) {
+    const safe = state.zones.filter(z => z.status === 'ok').length;
+    const warn = state.zones.filter(z => z.status === 'warn').length;
+    const crit = state.zones.filter(z => z.status === 'crit').length;
+    state.charts.status.data.datasets[0].data = [safe, warn, crit];
+    state.charts.status.update('none');
+  }
+
+  const insight = $('#insightBody');
+  if (activeAlerts === 0) insight.innerHTML = `<h5>النظام يعمل بكفاءة</h5><p>جميع المناطق ضمن النطاق المثالي. لا توجد إجراءات مطلوبة حالياً.</p>`;
+  else insight.innerHTML = `<h5>${activeAlerts} تنبيه نشط</h5><p>يُنصح بمراجعة التنبيهات النشطة والتحقق من المناطق المتأثرة.</p>`;
+}
+
+function avgSpark(type) {
+  const arr = state.zones[0].history[type].slice(-20);
+  const min = Math.min(...arr), max = Math.max(...arr);
+  const range = max - min || 1;
+  const w = 140, h = 28;
+  const points = arr.map((v, i) => {
+    const x = (i / (arr.length - 1)) * w;
+    const y = h - ((v - min) / range) * h;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const color = type === 'temp' ? '#22d3ee' : '#a78bfa';
+  return `<svg viewBox="0 0 140 28" preserveAspectRatio="none" style="width:100%;height:28px"><polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/></svg>`;
+}
+
+function renderRecentAlerts() {
+  const recent = state.alerts.slice(0, 3);
+  const container = $('#recentAlerts');
+  if (!recent.length) { container.innerHTML = `<div class="empty-state" style="padding:24px"><h4>لا توجد تنبيهات</h4><p>كل شيء تحت السيطرة</p></div>`; return; }
+  container.innerHTML = recent.map(a => {
+    const sevLabel = a.severity === 'crit' ? 'حرج' : a.severity === 'warn' ? 'تحذير' : 'معلومة';
+    return `<div class="feed-item"><div class="feed-icon" style="background:rgba(239,68,68,.1);color:var(--danger)">${ICONS.alert}</div><div class="feed-body"><div class="feed-title">${a.zoneName}</div><div class="feed-meta">${a.value} — ${sevLabel}</div></div><div class="feed-time">${a.time}</div></div>`;
+  }).join('');
+}
+
+function renderLiveFeed() {
+  const container = $('#liveFeed');
+  container.innerHTML = state.events.slice(0, 6).map(e => {
+    const colorMap = { success: 'var(--success)', warning: 'var(--warning)', info: 'var(--info)', danger: 'var(--danger)' };
+    const bgMap = { success: 'rgba(16,185,129,.1)', warning: 'rgba(245,158,11,.1)', info: 'rgba(59,130,246,.1)', danger: 'rgba(239,68,68,.1)' };
+    return `<div class="feed-item"><div class="feed-icon" style="background:${bgMap[e.color] || bgMap.info};color:${colorMap[e.color] || colorMap.info}">${ICONS[e.icon] || ICONS.info}</div><div class="feed-body"><div class="feed-title">${e.title}</div><div class="feed-meta">${e.meta}</div></div><div class="feed-time">${e.time}</div></div>`;
+  }).join('');
+}
+
+function renderZoneGrid() {
+  let zones = state.zones;
+  if (state.zoneFilter !== 'all') zones = zones.filter(z => z.status === state.zoneFilter);
+  if (state.zoneSearch) {
+    const q = state.zoneSearch.toLowerCase();
+    zones = zones.filter(z => z.name.toLowerCase().includes(q) || z.id.toLowerCase().includes(q));
+  }
+  const grid = $('#zoneGrid');
+  if (!zones.length) { grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><h4>لا توجد نتائج</h4><p>جرب تغيير الفلاتر أو البحث</p></div>`; return; }
+  grid.innerHTML = zones.map(z => {
+    const statusClass = z.status === 'ok' ? 'status-ok' : z.status === 'warn' ? 'status-warn' : 'status-crit';
+    const statusLabel = z.status === 'ok' ? 'آمنة' : z.status === 'warn' ? 'تحذير' : 'حرجة';
+    const zoneColor = z.status === 'ok' ? 'var(--success)' : z.status === 'warn' ? 'var(--warning)' : 'var(--danger)';
+    return `
+      <div class="zone-card" data-zone="${z.id}" style="--zone-color: ${zoneColor}">
+        <div class="zone-head">
+          <div><div class="zone-name">${z.name}</div><div class="zone-id">${z.id} · ${z.desc}</div></div>
+          <span class="status-badge ${statusClass}"><span class="status-dot"></span>${statusLabel}</span>
+        </div>
+        <div class="zone-metrics">
+          <div class="zm"><div class="zm-label">${ICONS.temp} الحرارة</div><div class="zm-value">${fmt(z.temp)}<small>°C</small></div></div>
+          <div class="zm"><div class="zm-label">${ICONS.hum} الرطوبة</div><div class="zm-value">${fmt(z.hum, 0)}<small>%</small></div></div>
+        </div>
+        <div class="zone-footer">
+          <div class="mini">${ICONS.wifi} ${z.deviceCount} أجهزة</div>
+          <div class="mini">${ICONS.clock} قبل ${Math.round(rand(1, 8))}د</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  grid.querySelectorAll('.zone-card').forEach(card => {
+    card.addEventListener('click', () => openZoneModal(card.dataset.zone));
+  });
+}
+
+function renderAlerts() {
+  let list = state.alerts;
+  const filter = state.alertFilter;
+  if (filter === 'active') list = list.filter(a => a.active);
+  else if (filter === 'crit') list = list.filter(a => a.severity === 'crit');
+  else if (filter === 'warn') list = list.filter(a => a.severity === 'warn');
+  else if (filter === 'resolved') list = list.filter(a => !a.active);
+
+  const body = $('#alertsBody');
+  if (!list.length) { body.innerHTML = `<tr><td colspan="7"><div class="empty-state"><h4>لا توجد تنبيهات</h4><p>كل شيء تحت السيطرة</p></div></td></tr>`; return; }
+
+  body.innerHTML = list.map(a => {
+    const sevClass = a.severity === 'crit' ? 'badge-danger' : a.severity === 'warn' ? 'badge-warning' : 'badge-cyan';
+    const sevLabel = a.severity === 'crit' ? 'حرج' : a.severity === 'warn' ? 'تحذير' : 'معلومة';
+    const typeLabel = a.type === 'temp' ? 'حرارة' : a.type === 'hum' ? 'رطوبة' : a.type === 'door' ? 'باب' : 'كهرباء';
+    const typeClass = a.type === 'temp' ? 'badge-danger' : a.type === 'hum' ? 'badge-cyan' : a.type === 'door' ? 'badge-violet' : 'badge-warning';
+    return `<tr>
+      <td class="mono text-muted">${a.time}</td>
+      <td style="font-weight:700">${a.zoneName}</td>
+      <td><span class="badge ${typeClass}">${typeLabel}</span></td>
+      <td style="font-weight:700">${a.value}</td>
+      <td><span class="badge ${sevClass}">${sevLabel}</span></td>
+      <td>${a.active ? '<span class="badge badge-warning"><span class="status-dot" style="background:var(--warning)"></span>نشط</span>' : '<span class="badge badge-success"><span class="status-dot" style="background:var(--success)"></span>معالج</span>'}</td>
+      <td>${a.active ? `<button class="btn btn-sm btn-ghost" data-ack="${a.time}">تأكيد</button>` : '<span class="text-muted text-small">—</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  body.querySelectorAll('[data-ack]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const a = state.alerts.find(x => x.time === btn.dataset.ack);
+      if (a) { a.active = false; renderAlerts(); renderKPIs(); updateNavBadge(); toast('success', 'تم التأكيد', `تم تأكيد التنبيه في ${a.zoneName}`); }
+    });
+  });
+}
+
+function renderDevices() {
+  let list = state.devices;
+  if ($('#deviceSearch') && $('#deviceSearch').value) {
+    const q = $('#deviceSearch').value.toLowerCase();
+    list = list.filter(d => d.name.toLowerCase().includes(q) || d.id.toLowerCase().includes(q));
+  }
+  const container = $('#deviceList');
+  if (!list.length) { container.innerHTML = `<div class="empty-state"><h4>لا توجد أجهزة</h4><p>جرب البحث بكلمة أخرى</p></div>`; return; }
+  container.innerHTML = list.map(d => {
+    const batColor = d.battery > 50 ? 'var(--success)' : d.battery > 20 ? 'var(--warning)' : 'var(--danger)';
+    return `<div class="device-row">
+      <div class="device-icon">${ICONS.cpu}</div>
+      <div class="device-info"><div class="name">${d.name}</div><div class="id">${d.id} · ${d.zoneName}</div></div>
+      <div class="device-meta">
+        <div class="item" style="color:${d.online ? 'var(--success)' : 'var(--text-3)'}">${ICONS.wifi} ${d.online ? 'متصل' : 'غير متصل'}</div>
+        <div class="item" style="color:${batColor}">${ICONS.battery} ${d.battery}%</div>
+        <div class="item text-muted">${ICONS.clock} قبل ${d.lastSeen}د</div>
+        <span class="badge badge-muted">${d.signal}%</span>
+      </div>
+    </div>`;
+  }).join('');
+  $('#statDevices').textContent = state.devices.length;
+  $('#statOnline').textContent = state.devices.filter(d => d.online).length;
+  $('#statBattery').textContent = state.devices.filter(d => d.battery < 25).length;
+}
+
+function renderAnalytics() {
+  if (state.charts.compare) {
+    state.charts.compare.data.datasets[0].data = state.zones.map(z => z.temp);
+    state.charts.compare.data.datasets[1].data = state.zones.map(z => z.hum);
+    state.charts.compare.update('none');
+  }
+  if (state.charts.radar) {
+    state.charts.radar.data.datasets[0].data = state.zones.map(z => z.status === 'ok' ? rand(85,100) : z.status === 'warn' ? rand(55,75) : rand(30,50));
+    state.charts.radar.update('none');
+  }
+  $('#statReadings').textContent = state.readingsTotal.toLocaleString('en-US');
+}
+
+function renderHeatmap() {
+  const container = $('#heatmap');
+  let html = '<div class="hm-label"></div>';
+  for (let h = 0; h < 24; h++) html += `<div class="hm-head">${h}</div>`;
+  state.zones.forEach(z => {
+    html += `<div class="hm-label">${z.name}</div>`;
+    for (let h = 0; h < 24; h++) {
+      const t = z.temp + Math.sin(h / 4) * 2 + rand(-1.5, 1.5);
+      const intensity = clamp(t / 30, 0, 1);
+      const r = Math.round(34 + intensity * 205);
+      const g = Math.round(211 - intensity * 100);
+      const b = Math.round(238 - intensity * 120);
+      html += `<div class="hm-cell" style="background:rgb(${r},${g},${b})" title="${z.name} — ${h}:00 — ${fmt(t)}°C"></div>`;
+    }
+  });
+  container.innerHTML = html;
+  const legend = $('#hmLegendBar');
+  legend.innerHTML = '';
+  for (let i = 0; i < 8; i++) {
+    const intensity = i / 7;
+    const r = Math.round(34 + intensity * 205);
+    const g = Math.round(211 - intensity * 100);
+    const b = Math.round(238 - intensity * 120);
+    const span = document.createElement('span');
+    span.style.background = `rgb(${r},${g},${b})`;
+    legend.appendChild(span);
+  }
+}
+
+function openZoneModal(zoneId) {
+  const z = state.zones.find(x => x.id === zoneId);
+  if (!z) return;
+  $('#modalTitle').textContent = z.name;
+  $('#modalSub').textContent = `${z.id} · ${z.desc}`;
+  $('#modalBody').innerHTML = `
+    <div class="grid-3 mb-4">
+      <div class="zm" style="padding:14px"><div class="zm-label">${ICONS.temp} الحرارة</div><div class="zm-value" style="font-size:22px">${fmt(z.temp)}<small>°C</small></div></div>
+      <div class="zm" style="padding:14px"><div class="zm-label">${ICONS.hum} الرطوبة</div><div class="zm-value" style="font-size:22px">${fmt(z.hum, 0)}<small>%</small></div></div>
+      <div class="zm" style="padding:14px"><div class="zm-label">${ICONS.cpu} الأجهزة</div><div class="zm-value" style="font-size:22px">${z.deviceCount}<small>وحدات</small></div></div>
+    </div>
+    <div class="card-head" style="padding:0 0 12px;border:none"><h3>السجل (60 قراءة)</h3></div>
+    <div class="chart-wrapper"><canvas id="zoneDetailChart"></canvas></div>`;
+  setTimeout(() => {
+    const ctx = $('#zoneDetailChart').getContext('2d');
+    const gradT = ctx.createLinearGradient(0, 0, 0, 320);
+    gradT.addColorStop(0, 'rgba(34,211,238,.28)');
+    gradT.addColorStop(1, 'rgba(34,211,238,0)');
+    new Chart(ctx, {
+      type: 'line',
+      data: { labels: z.history.labels, datasets: [
+        { label: 'الحرارة', data: z.history.temp, borderColor: '#22d3ee', backgroundColor: gradT, borderWidth: 2, tension: .4, pointRadius: 0, fill: true, yAxisID: 'y' },
+        { label: 'الرطوبة', data: z.history.hum, borderColor: '#a78bfa', borderWidth: 2, tension: .4, pointRadius: 0, yAxisID: 'y1' }
+      ]},
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: { size: 10 }, usePointStyle: true, pointStyle: 'circle', boxWidth: 6 } } }, scales: { x: { grid: { display: false }, ticks: { display: false } }, y: { position: 'right', grid: { color: 'rgba(255,255,255,.04)' }, ticks: { callback: v => v + '°', font: { size: 9 } } }, y1: { position: 'left', grid: { display: false }, ticks: { callback: v => v + '%', font: { size: 9 } } } } }
+    });
+  }, 50);
+  $('#modalOverlay').classList.add('show');
+}
+
+function openDrawer() {
+  const list = $('#notifList');
+  const notifs = state.alerts.slice(0, 8);
+  if (!notifs.length) list.innerHTML = `<div class="empty-state"><h4>لا توجد إشعارات</h4><p>ستظهر هنا التنبيهات الجديدة</p></div>`;
+  else list.innerHTML = notifs.map(a => `<div class="feed-item"><div class="feed-icon" style="background:rgba(239,68,68,.1);color:var(--danger)">${ICONS.alert}</div><div class="feed-body"><div class="feed-title">${a.zoneName}</div><div class="feed-meta">${a.value} · ${a.severity === 'crit' ? 'حرج' : a.severity === 'warn' ? 'تحذير' : 'معلومة'}</div></div><div class="feed-time">${a.time}</div></div>`).join('');
+  $('#notifDrawer').classList.add('show');
+  $('#overlay').classList.add('show');
+}
+
+function closeDrawer() {
+  $('#notifDrawer').classList.remove('show');
+  $('#overlay').classList.remove('show');
+}
+
+const PALETTE_ITEMS = [
+  { label: 'نظرة عامة', hint: 'لوحة التحكم', view: 'overview', icon: 'chart' },
+  { label: 'المناطق', hint: 'عرض المناطق', view: 'zones', icon: 'cpu' },
+  { label: 'التحليلات', hint: 'رؤى معمقة', view: 'analytics', icon: 'chart' },
+  { label: 'التنبيهات', hint: 'إدارة التنبيهات', view: 'alerts', icon: 'bell' },
+  { label: 'الأجهزة', hint: 'قائمة الأجهزة', view: 'devices', icon: 'cpu' },
+  { label: 'التقارير', hint: 'توليد التقارير', view: 'reports', icon: 'chart' },
+  { label: 'الإعدادات', hint: 'حدود الإنذار', view: 'settings', icon: 'shield' }
+];
+
+function openPalette() {
+  $('#paletteOverlay').classList.add('show');
+  $('#paletteInput').value = '';
+  renderPalette('');
+  setTimeout(() => $('#paletteInput').focus(), 50);
+}
+
+function closePalette() { $('#paletteOverlay').classList.remove('show'); }
+
+function renderPalette(query) {
+  const q = query.toLowerCase();
+  const filtered = PALETTE_ITEMS.filter(p => p.label.includes(q) || p.hint.toLowerCase().includes(q));
+  const list = $('#paletteList');
+  if (!filtered.length) { list.innerHTML = `<div class="palette-empty">لا توجد نتائج</div>`; return; }
+  list.innerHTML = filtered.map((p, i) => `<div class="palette-item ${i === 0 ? 'active' : ''}" data-view="${p.view}"><div class="icon">${ICONS[p.icon]}</div><div class="label">${p.label}</div><div class="hint">${p.hint}</div></div>`).join('');
+  list.querySelectorAll('.palette-item').forEach(item => {
+    item.addEventListener('click', () => { goTo(item.dataset.view); closePalette(); });
+  });
+}
+
+function toast(type, title, msg) {
+  const container = $('#toasts');
+  const el = document.createElement('div');
+  el.className = `toast ${type === 'success' ? 'success' : type === 'warn' ? 'warn' : type === 'crit' ? 'crit' : ''}`;
+  const iconMap = { success: ICONS.check, warn: ICONS.alert, crit: ICONS.alert, info: ICONS.info };
+  el.innerHTML = `<div class="toast-icon">${iconMap[type] || ICONS.info}</div><div class="toast-body"><div class="toast-title">${title}</div><div class="toast-msg">${msg}</div></div>`;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity .3s, transform .3s';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(-30px)';
+    setTimeout(() => el.remove(), 300);
+  }, 4000);
+}
+
+function tick() {
+  if (state.paused) return;
+  state.readingsTotal += state.zones.length;
+  state.zones.forEach(z => {
+    z.temp = clamp(z.temp + rand(-0.25, 0.25), z.tempMin - 5, z.tempMax + 5);
+    z.hum = clamp(z.hum + rand(-1.2, 1.2), z.humMin - 15, z.humMax + 15);
+    z.history.temp.push(z.temp);
+    z.history.hum.push(z.hum);
+    z.history.labels.push('');
+    if (z.history.temp.length > 60) { z.history.temp.shift(); z.history.hum.shift(); z.history.labels.shift(); }
+    const tOut = z.temp > z.tempMax || z.temp < z.tempMin;
+    const hOut = z.hum > z.humMax || z.hum < z.humMin;
+    const tSevere = z.temp > z.tempMax + 2 || z.temp < z.tempMin - 2;
+    const hSevere = z.hum > z.humMax + 10 || z.hum < z.humMin - 10;
+    const prevStatus = z.status;
+    if (tSevere || hSevere) z.status = 'crit';
+    else if (tOut || hOut) z.status = 'warn';
+    else z.status = 'ok';
+    if (z.status !== 'ok' && Math.random() < 0.12) {
+      const useTemp = tOut || Math.random() < 0.5;
+      const val = useTemp ? `${fmt(z.temp)}°C` : `${fmt(z.hum, 0)}%`;
+      pushAlert(z, useTemp ? 'temp' : 'hum', val, z.status === 'crit' ? 'crit' : 'warn');
+    }
+    if (prevStatus !== z.status) {
+      state.events.unshift({
+        icon: z.status === 'ok' ? 'check' : 'alert',
+        color: z.status === 'ok' ? 'success' : z.status === 'warn' ? 'warning' : 'danger',
+        title: `تغيّر حالة ${z.name} إلى ${z.status === 'ok' ? 'آمنة' : z.status === 'warn' ? 'تحذيرية' : 'حرجة'}`,
+        meta: z.id, time: now()
+      });
+      if (state.events.length > 20) state.events.pop();
+    }
+  });
+  if (state.charts.main) {
+    const labels = state.zones[0].history.labels;
+    const tAvg = labels.map((_, i) => state.zones.reduce((s, z) => s + z.history.temp[i], 0) / state.zones.length);
+    const hAvg = labels.map((_, i) => state.zones.reduce((s, z) => s + z.history.hum[i], 0) / state.zones.length);
+    state.charts.main.data.labels = labels;
+    state.charts.main.data.datasets[0].data = tAvg;
+    state.charts.main.data.datasets[1].data = hAvg;
+    state.charts.main.update('none');
+  }
+  if (state.view === 'overview') { renderKPIs(); renderRecentAlerts(); renderLiveFeed(); }
+  if (state.view === 'zones') renderZoneGrid();
+  if (state.view === 'analytics') renderAnalytics();
+  $('#activeDevices').textContent = `${state.devices.filter(d => d.online).length}/${state.devices.length}`;
+  updateNavBadge();
+}
+
+function pushAlert(zone, type, value, severity) {
+  state.alerts.unshift({ time: now(), zone: zone.id, zoneName: zone.name, type, value, severity, active: true });
+  if (state.alerts.length > 40) state.alerts.pop();
+  const label = severity === 'crit' ? 'حرج' : 'تحذير';
+  toast(severity === 'crit' ? 'crit' : 'warn', `${zone.name} — تنبيه ${label}`, `${type === 'temp' ? 'حرارة' : 'رطوبة'}: ${value}`);
+  if (state.view === 'overview') { renderRecentAlerts(); renderKPIs(); }
+  if (state.view === 'alerts') renderAlerts();
+  updateNavBadge();
+  $('#notifDot').style.display = 'block';
+}
+
+function updateNavBadge() {
+  const n = state.alerts.filter(a => a.active).length;
+  const badge = $('#navAlertBadge');
+  badge.textContent = n;
+  badge.classList.toggle('show', n > 0);
+}
+
+function updateUptime() {
+  const elapsed = Math.floor((Date.now() - state.uptimeStart) / 1000);
+  const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+  const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+  const s = String(elapsed % 60).padStart(2, '0');
+  $('#uptime').textContent = `${h}:${m}:${s}`;
+}
+
+function exportCSV() {
+  const rows = [['Zone ID','Zone Name','Temperature','Humidity','Status','Min Temp','Max Temp','Min Hum','Max Hum']];
+  state.zones.forEach(z => rows.push([z.id, z.name, fmt(z.temp), fmt(z.hum, 0), z.status, z.tempMin, z.tempMax, z.humMin, z.humMax]));
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `stocksafety-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('success', 'تم التصدير', 'تم تنزيل ملف CSV بنجاح');
+}
+
+function toggleTheme() {
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', state.theme);
+  const sw = $('#themeSwitch');
+  if (sw) sw.classList.toggle('on', state.theme === 'light');
+}
+
+/* ═══════════ BIND EVENTS ═══════════ */
+function bindEvents() {
+  $$('.nav-item').forEach(n => n.addEventListener('click', () => goTo(n.dataset.view)));
+  $$('[data-goto]').forEach(b => b.addEventListener('click', () => goTo(b.dataset.goto)));
+
+  $('#sidebarToggle').addEventListener('click', () => $('#sidebar').classList.toggle('open'));
+  $('#themeToggle').addEventListener('click', toggleTheme);
+  $('#notifBtn').addEventListener('click', () => { openDrawer(); $('#notifDot').style.display = 'none'; });
+  $$('[data-close-drawer]').forEach(b => b.addEventListener('click', closeDrawer));
+  $('#overlay').addEventListener('click', () => { closeDrawer(); closePalette(); });
+
+  $('#searchTrigger').addEventListener('click', openPalette);
+  $('#paletteInput').addEventListener('input', e => renderPalette(e.target.value));
+
+  $$('[data-close-modal]').forEach(b => b.addEventListener('click', () => $('#modalOverlay').classList.remove('show')));
+  $('#modalOverlay').addEventListener('click', e => { if (e.target.id === 'modalOverlay') $('#modalOverlay').classList.remove('show'); });
+
+  $$('[data-close-profile]').forEach(b => b.addEventListener('click', closeProfile));
+  $('#profileOverlay').addEventListener('click', e => { if (e.target.id === 'profileOverlay') closeProfile(); });
+  $('#profileForm').addEventListener('submit', handleProfileSubmit);
+  $('#profileCancel').addEventListener('click', closeProfile);
+  $('#profileName').addEventListener('input', e => {
+    $('#profileAvatarPreview').textContent = getInitials(e.target.value || '؟');
+  });
+  $('#userChip').addEventListener('click', () => openProfile(false));
+  const editBtn = $('#editProfileBtn');
+  if (editBtn) editBtn.addEventListener('click', () => openProfile(false));
+
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      if ($('#paletteOverlay').classList.contains('show')) closePalette(); else openPalette();
+    }
+    if (e.key === 'Escape') {
+      closePalette(); closeDrawer(); closeProfile();
+      $('#modalOverlay').classList.remove('show');
+    }
+    if (e.target.tagName === 'INPUT') return;
+    const views = ['overview','zones','analytics','alerts','devices','reports','settings'];
+    if (e.key >= '1' && e.key <= '7') goTo(views[parseInt(e.key) - 1]);
+  });
+
+  $$('#zoneFilterChips .chip').forEach(c => c.addEventListener('click', () => {
+    $$('#zoneFilterChips .chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    state.zoneFilter = c.dataset.filter;
+    renderZoneGrid();
+  }));
+
+  $$('#alertFilterChips .chip').forEach(c => c.addEventListener('click', () => {
+    $$('#alertFilterChips .chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    state.alertFilter = c.dataset.filter;
+    renderAl
