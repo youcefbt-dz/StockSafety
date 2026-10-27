@@ -1390,4 +1390,104 @@ function bindEvents() {
     $$('#alertFilterChips .chip').forEach(x => x.classList.remove('active'));
     c.classList.add('active');
     state.alertFilter = c.dataset.filter;
-    renderAl
+    renderAlerts();
+  }));
+
+  $$('#timeRangeChips .chip').forEach(c => c.addEventListener('click', () => {
+    $$('#timeRangeChips .chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    toast('info', 'الفترة الزمنية', `تم التبديل إلى ${c.textContent.trim()}`);
+  }));
+
+  $$('#analyticsRange .chip').forEach(c => c.addEventListener('click', () => {
+    $$('#analyticsRange .chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    renderAnalytics();
+  }));
+
+  $$('[data-series]').forEach(c => c.addEventListener('click', () => {
+    $$('[data-series]').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    if (!state.charts.main) return;
+    const s = c.dataset.series;
+    state.charts.main.data.datasets[0].hidden = s === 'hum';
+    state.charts.main.data.datasets[1].hidden = s === 'temp';
+    state.charts.main.update();
+  }));
+
+  $('#refreshBtn').addEventListener('click', () => { tick(); toast('info', 'تم التحديث', 'تم تحديث لوحة التحكم'); });
+  $('#exportBtn').addEventListener('click', exportCSV);
+  $('#ackAllBtn').addEventListener('click', () => {
+    state.alerts.forEach(a => a.active = false);
+    renderAlerts(); renderKPIs(); updateNavBadge();
+    toast('success', 'تم التأكيد', 'تم تأكيد جميع التنبيهات');
+  });
+
+  $('#zoneSearch').addEventListener('input', e => { state.zoneSearch = e.target.value; renderZoneGrid(); });
+  $('#deviceSearch').addEventListener('input', renderDevices);
+
+  const sliderBindings = [
+    ['tempMinSlider','tempMinVal','°C','tempMin'],
+    ['tempMaxSlider','tempMaxVal','°C','tempMax'],
+    ['humMinSlider','humMinVal','%','humMin'],
+    ['humMaxSlider','humMaxVal','%','humMax']
+  ];
+  sliderBindings.forEach(([sliderId, valId, unit, key]) => {
+    const slider = document.getElementById(sliderId);
+    const valEl = document.getElementById(valId);
+    if (!slider) return;
+    slider.addEventListener('input', () => {
+      valEl.textContent = slider.value + unit;
+      state.thresholds[key] = parseInt(slider.value);
+    });
+  });
+
+  $$('[data-toggle]').forEach(sw => sw.addEventListener('click', () => {
+    sw.classList.toggle('on');
+    if (sw.id === 'themeSwitch') toggleTheme();
+  }));
+
+  $('#saveSettings').addEventListener('click', () => toast('success', 'تم الحفظ', 'تم حفظ الإعدادات بنجاح'));
+  $$('.report-card').forEach(card => card.addEventListener('click', () => toast('info', 'توليد التقرير', 'جارٍ إعداد التقرير... (نسخة عرض توضيحية)')));
+}
+
+/* ═══════════ INIT ═══════════ */
+function init() {
+  initZones();
+  initDevices();
+  initAlerts();
+  initEvents();
+
+  const hasUser = loadUser();
+  applyUser();
+
+  renderKPIs();
+  renderRecentAlerts();
+  renderLiveFeed();
+  renderZoneGrid();
+  renderAlerts();
+  renderDevices();
+  renderAnalytics();
+  renderHeatmap();
+  updateNavBadge();
+
+  bindEvents();
+  setTimeout(() => ensureCharts('overview'), 100);
+
+  setInterval(tick, 2000);
+  setInterval(updateUptime, 1000);
+
+  if (!hasUser) {
+    setTimeout(() => {
+      openProfile(true);
+      toast('info', 'مرحباً بك', 'الرجاء إدخال اسمك للبدء');
+    }, 500);
+  } else {
+    setTimeout(() => toast('info', 'مرحباً بعودتك', state.user.name), 800);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
